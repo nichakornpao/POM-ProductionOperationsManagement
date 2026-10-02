@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Attachments Modal</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Modal Backdrop / Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Modal Container */
+    .modal-card-container {
+      width: 100%;
+      max-width: 780px;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes scaleUp {
+      from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* Header */
+    .modal-header-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-title-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .modal-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.15s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    /* Modal Body */
+    .modal-body-section {
+      padding: 24px 28px 20px;
+    }
+
+    /* 2 Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    /* Card Wrapper */
+    .doc-card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    /* Header above card: Title & Down Arrow */
+    .card-top-header {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .card-top-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #1a2a4a;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .card-top-arrow {
+      color: #1a2a4a;
+      font-size: 0.85rem;
+      font-weight: 700;
+      animation: bounceDown 1.8s infinite;
+    }
+
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px); }
+    }
+
+    /* Document / Sheet Card Outer Border */
+    .doc-sheet-card {
+      position: relative;
+      background: #ffffff;
+      border: 2px solid #1a2a4a;
+      border-radius: 8px 12px 10px 8px;
+      padding: 16px 14px 22px;
+      /* Subtle 1.2deg paper angle/skew effect */
+      transform: skew(-0.8deg, 0.4deg);
+      box-shadow: 3px 5px 12px rgba(26, 42, 74, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .doc-sheet-card:hover {
+      box-shadow: 4px 8px 18px rgba(26, 42, 74, 0.12);
+    }
+
+    /* Counter-skew inner elements so text/inputs remain perfectly legible */
+    .doc-sheet-card > * {
+      transform: skew(0.8deg, -0.4deg);
+    }
+
+    /* Folder Tab attached to bottom edge */
+    .doc-sheet-card::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 26px;
+      width: 52px;
+      height: 9px;
+      background: #ffffff;
+      border-left: 2px solid #1a2a4a;
+      border-right: 2px solid #1a2a4a;
+      border-bottom: 2px solid #1a2a4a;
+      border-radius: 0 0 5px 5px;
+      clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+    }
+
+    /* Inner Frame (Rounded rectangle, thin border) */
+    .doc-inner-frame {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 12px 10px;
+      background: #fafbfc;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Frame Top-Left Badge / Label */
+    .frame-badge-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a2a4a;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Form Rows */
+    .input-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label-small {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .dynamic-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Dynamic Row (Input + Button) */
+    .dynamic-input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Base Input Styles */
+    .doc-input {
+      height: 34px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 0 10px;
+      font-size: 0.82rem;
+      color: #1e293b;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .doc-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .doc-input::placeholder {
+      color: #94a3b8;
+      font-size: 0.78rem;
+    }
+
+    /* Full width path input */
+    .input-path {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Short Rev input (70-90px) */
+    .input-rev {
+      width: 80px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Quantity input (60px) */
+    .input-qty {
+      width: 65px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Action Buttons (+ / ×) */
+    .btn-action-round {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 700;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      border: 1px solid transparent;
+    }
+
+    /* Plus Button */
+    .btn-add-row {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: #bfdbfe;
+    }
+
+    .btn-add-row:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    /* Delete (×) Button */
+    .btn-del-row {
+      background: #fef2f2;
+      color: #ef4444;
+      border-color: #fecaca;
+    }
+
+    .btn-del-row:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+    }
+
+    /* Row 3: Quantity Layout */
+    .qty-row-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qty-text-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    /* Card Bottom Right Thumbnail / Preview Icon */
+    .card-bottom-icon {
+      position: absolute;
+      right: 12px;
+      bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1a2a4a;
+      opacity: 0.85;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .card-bottom-icon:hover {
+      opacity: 1;
+      color: #2563eb;
+      transform: scale(1.1);
+    }
+
+    .card-bottom-icon i {
+      font-size: 1.15rem;
+    }
+
+    /* Footer Section */
+    .modal-footer-section {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 14px 24px 18px;
+      border-top: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+
+    .btn-footer-cancel {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-footer-cancel:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+
+    .btn-footer-save {
+      padding: 8px 22px;
+      border-radius: 8px;
+      border: 1px solid #0f172a;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+      transition: all 0.15s ease;
+    }
+
+    .btn-footer-save:hover {
+      background: #1e293b;
+      border-color: #1e293b;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.25);
+    }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .modal-card-container {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="attachmentModal">
+    <div class="modal-card-container">
+
+      <!-- Header -->
+      <div class="modal-header-section">
+        <div class="modal-title-text" id="modalTitle">Add Attachments (Rev 0)</div>
+        <button type="button" class="modal-close-btn" id="closeModalBtn" title="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <!-- Body: 2 Document Cards -->
+      <div class="modal-body-section">
+        <div class="cards-grid">
+
+          <!-- ==================== LEFT CARD: DRAWING ==================== -->
+          <div class="doc-card-wrapper">
+            <div class="card-top-header">
+              <div class="card-top-title">
+                DRAWING
+                <i class="bi bi-arrow-down card-top-arrow"></i>
+              </div>
+            </div>
+
+            <div class="doc-sheet-card" id="cardDrawing">
+              <div class="doc-inner-frame">
+                <!-- Top-Left Badge -->
+                <div class="frame-badge-label">
+                  <i class="bi bi-file-earmark-code"></i> Dwg:
+                </div>
+
+                <!-- Row 1: Path (Dynamic List) -->
+                <div class="input-field-group">
+                  <div class="field-label-small">Path</div>
+                  <div class="dynamic-list-container" id="dwgPathList">
+                    <div class="dynamic-input-row">
+                      <input type="text" class="doc-input input-path" placeholder="P:\Drawing\..." value="">
+                      <button type="button" class="btn-action-round btn-add-row" title="Add Path" onclick="addPathRow('dwgPathList', 'P:\\Drawing\\...')">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 2: Rev (Dynamic List) -->
+                <div class="input-field-group">
+                  <div class="field-label-small">Rev</div>
+                  <div class="dynamic-list-container" id="dwgRevList">
+                    <div class="dynamic-input-row">
+                      <input type="text" class="doc-input input-rev" placeholder="0" value="0">
+                      <button type="button" class="btn-action-round btn-add-row" title="Add Rev" onclick="addRevRow('dwgRevList')">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 3: MC Quantity -->
+                <div class="input-field-group">
+                  <div class="field-label-small">MC Quantity</div>
+                  <div class="qty-row-wrapper">
+                    <input type="number" class="doc-input input-qty" id="dwgQtyInput" placeholder="4" value="4" min="0">
+                    <span class="qty-text-label">ชิ้น</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Right Thumbnail / Preview Icon -->
+              <div class="card-bottom-icon" title="Preview Drawing" onclick="previewThumbnail('DRAWING')">
+                <i class="bi bi-file-earmark-image"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== RIGHT CARD: LAYOUT ==================== -->
+          <div class="doc-card-wrapper">
+            <div class="card-top-header">
+              <div class="card-top-title">
+                LAYOUT
+                <i class="bi bi-arrow-down card-top-arrow"></i>
+              </div>
+            </div>
+
+            <div class="doc-sheet-card" id="cardLayout">
+              <div class="doc-inner-frame">
+                <!-- Top-Left Badge -->
+                <div class="frame-badge-label">
+                  <i class="bi bi-grid-3x3"></i> L
+                </div>
+
+                <!-- Row 1: Path (Dynamic List) -->
+                <div class="input-field-group">
+                  <div class="field-label-small">Path</div>
+                  <div class="dynamic-list-container" id="layoutPathList">
+                    <div class="dynamic-input-row">
+                      <input type="text" class="doc-input input-path" placeholder="P:\Layout\..." value="">
+                      <button type="button" class="btn-action-round btn-add-row" title="Add Path" onclick="addPathRow('layoutPathList', '\\\\pbp083\\Public\\Process Engineer\\...')">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 2: Rev (Dynamic List) -->
+                <div class="input-field-group">
+                  <div class="field-label-small">Rev</div>
+                  <div class="dynamic-list-container" id="layoutRevList">
+                    <div class="dynamic-input-row">
+                      <input type="text" class="doc-input input-rev" placeholder="0" value="0">
+                      <button type="button" class="btn-action-round btn-add-row" title="Add Rev" onclick="addRevRow('layoutRevList')">
+                        <i class="bi bi-plus-lg"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 3: MC Quantity -->
+                <div class="input-field-group">
+                  <div class="field-label-small">MC Quantity</div>
+                  <div class="qty-row-wrapper">
+                    <input type="number" class="doc-input input-qty" id="layoutQtyInput" placeholder="4" value="4" min="0">
+                    <span class="qty-text-label">ชิ้น</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Right Thumbnail / Preview Icon -->
+              <div class="card-bottom-icon" title="Preview Layout" onclick="previewThumbnail('LAYOUT')">
+                <i class="bi bi-file-earmark-richtext"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer-section">
+        <button type="button" class="btn-footer-cancel" id="cancelModalBtn">Cancel</button>
+        <button type="button" class="btn-footer-save" id="saveModalBtn">Save Changes</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JavaScript Interaction -->
+  <script>
+    // 1. Dynamic Revision Number variable
+    let revNumber = 0;
+
+    // Set title on load
+    function setRevisionTitle(rev) {
+      revNumber = rev;
+      document.getElementById('modalTitle').textContent = `Add Attachments (Rev ${revNumber})`;
+    }
+    setRevisionTitle(0);
+
+    // 2. Add Dynamic Path Row
+    function addPathRow(containerId, placeholder) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'dynamic-input-row';
+      row.innerHTML = `
+        <input type="text" class="doc-input input-path" placeholder="${placeholder}" value="">
+        <button type="button" class="btn-action-round btn-del-row" title="Delete Path" onclick="removeRow(this)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      `;
+      container.appendChild(row);
+      row.querySelector('input').focus();
+    }
+
+    // 3. Add Dynamic Rev Row
+    function addRevRow(containerId) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'dynamic-input-row';
+      row.innerHTML = `
+        <input type="text" class="doc-input input-rev" placeholder="Rev" value="">
+        <button type="button" class="btn-action-round btn-del-row" title="Delete Rev" onclick="removeRow(this)">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      `;
+      container.appendChild(row);
+      row.querySelector('input').focus();
+    }
+
+    // 4. Remove Dynamic Row
+    function removeRow(btn) {
+      const row = btn.closest('.dynamic-input-row');
+      if (row) {
+        row.remove();
+      }
+    }
+
+    // 5. Close Modal
+    function closeModal() {
+      const modal = document.getElementById('attachmentModal');
+      modal.style.display = 'none';
+      console.log('Modal closed');
+    }
+
+    // 6. Preview Thumbnail Icon Handler
+    function previewThumbnail(type) {
+      alert(`Preview thumbnail clicked for: ${type}`);
+    }
+
+    // 7. Save Changes Action (console.log all values)
+    function saveChanges() {
+      // Collect DRAWING data
+      const dwgPaths = Array.from(document.querySelectorAll('#dwgPathList .input-path'))
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+
+      const dwgRevs = Array.from(document.querySelectorAll('#dwgRevList .input-rev'))
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+
+      const dwgQty = parseInt(document.getElementById('dwgQtyInput').value) || 0;
+
+      // Collect LAYOUT data
+      const layoutPaths = Array.from(document.querySelectorAll('#layoutPathList .input-path'))
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+
+      const layoutRevs = Array.from(document.querySelectorAll('#layoutRevList .input-rev'))
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+
+      const layoutQty = parseInt(document.getElementById('layoutQtyInput').value) || 0;
+
+      const result = {
+        DRAWING: {
+          paths: dwgPaths,
+          revs: dwgRevs,
+          qty: dwgQty
+        },
+        LAYOUT: {
+          paths: layoutPaths,
+          revs: layoutRevs,
+          qty: layoutQty
+        }
+      };
+
+      console.log('=== SAVE CHANGES: Attachments Data ===', result);
+      alert('Save Changes clicked! Check console for full payload:\n' + JSON.stringify(result, null, 2));
+    }
+
+    // Event Listeners
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+    document.getElementById('saveModalBtn').addEventListener('click', saveChanges);
+
+    // Close on overlay click outside container
+    document.getElementById('attachmentModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+  </script>
+
+</body>
+</html>

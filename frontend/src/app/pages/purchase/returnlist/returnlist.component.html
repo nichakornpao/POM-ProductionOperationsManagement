@@ -1,0 +1,192 @@
+<div class="content-area">
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <h1>Return List</h1>
+            <p>View and manage item return history.</p>
+        </div>
+    </div>
+
+    <!-- Action & Filter Bar -->
+    <div class="action-bar">
+        <div class="filters">
+            <div class="group-select">
+                <label>Division:</label>
+                <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+                    (change)="onFilter()" placeholder="All Divisions" [clearable]="true" appendTo="body"
+                    style="min-width: 180px;">
+                </ng-select>
+            </div>
+
+            <div class="form-check form-switch d-flex align-items-center ms-4">
+                <input class="form-check-input" type="checkbox" role="switch" id="showCompletedSwitch"
+                    [(ngModel)]="showCompleted" (change)="onFilter()" style="cursor: pointer;">
+                <label class="form-check-label ms-2" for="showCompletedSwitch"
+                    style="font-weight: 600; font-size: 0.9rem; cursor: pointer; color: var(--color-text-main);">
+                    Show Completed
+                </label>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-clear" (click)="onClear()">
+                <i class="bi bi-eraser-fill"></i> CLEAR
+            </button>
+            <button class="btn-complete" (click)="onComplete()">
+                <i class="bi bi-check-circle-fill"></i> COMPLETE
+            </button>
+            <button class="btn-export" (click)="exportToExcel()">
+                <i class="bi bi-file-earmark-excel-fill"></i> EXPORT TO EXCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- Division Selection Message (Outside Table) -->
+    <div *ngIf="!Division_" class="alert alert-info text-center mt-2" style="font-weight: 500;">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Please select a Division to view data. / กรุณาเลือก Division เพื่อดูข้อมูล
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr class="filter-row">
+                    <td class="col-checkbox"></td>
+                    <td class="col-no"></td>
+                    <td class="col-doc">
+                        <ng-select [items]="DocNoList" bindLabel="label" bindValue="value" [(ngModel)]="DocNoFilter_"
+                            (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
+                            [searchable]="true" panelClass="auto-width-dropdown">
+                        </ng-select>
+                    </td>
+                    <td class="col-date">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-date-filter" style="width: 100%; margin-top: 4px;">
+                            <input matInput [matDatepicker]="pickerReturnDate" [(ngModel)]="ReturnDateFilter_" placeholder="DD/MM/YYYY" (dateChange)="onFilter()" (keyup.enter)="onFilter()">
+                            <mat-datepicker-toggle matIconSuffix [for]="pickerReturnDate"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerReturnDate></mat-datepicker>
+                        </mat-form-field>
+                    </td>
+                    <td class="col-name"></td> <!-- Return By -->
+                    <td class="col-div"></td> <!-- Div -->
+                    <td class="col-process">
+                        <ng-select [items]="ProcessList" bindLabel="label" bindValue="value"
+                            [(ngModel)]="ProcessFilter_" (change)="onFilter()" placeholder="All" [clearable]="true"
+                            appendTo="body" class="no-expand" [searchable]="true">
+                        </ng-select>
+                    </td>
+                    <td class="col-fac">
+                        <ng-select [items]="FacList" bindLabel="label" bindValue="value" [(ngModel)]="FacFilter_"
+                            (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
+                            [searchable]="true">
+                        </ng-select>
+                    </td>
+                    <td class="col-partno">
+                        <ng-select [items]="PartNoList" bindLabel="label" bindValue="value" [(ngModel)]="PartNoFilter_"
+                            (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
+                            [searchable]="true">
+                        </ng-select>
+                    </td>
+                    <td class="col-itemno">
+                        <ng-select [items]="ItemNoList" bindLabel="label" bindValue="value" [(ngModel)]="ItemNoFilter_"
+                            (change)="onFilter()" placeholder="All" [clearable]="true" appendTo="body" class="no-expand"
+                            [searchable]="true">
+                        </ng-select>
+                    </td>
+                    <td class="col-itemname"></td> <!-- Item Name -->
+                    <td class="col-spec"></td> <!-- Spec -->
+                    <td class="col-qty"></td> <!-- QTY -->
+                    <td class="col-usage"></td> <!-- Usage -->
+                    <td class="col-phone"></td> <!-- Phone -->
+                    <td class="col-confirm"></td> <!-- Confirm -->
+                </tr>
+                <tr class="header-group-row">
+                    <th colspan="16">FOR PURCHASE</th>
+                </tr>
+                <tr class="header-cols">
+                    <th class="col-checkbox no-sort">
+                        <input type="checkbox" [(ngModel)]="selectAllChecked" (change)="toggleAllCheckboxes()">
+                    </th>
+                    <th class="col-no no-sort">NO</th>
+                    <th class="col-doc" (click)="onSort('Doc_No')">Document <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-date" (click)="onSort('Return_Date')">Return Date <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-name" (click)="onSort('Return_By')">Return By <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-div" (click)="onSort('Division')">Div <i class="bi bi-arrow-down-up ms-1 small"></i>
+                    </th>
+                    <th class="col-process" (click)="onSort('Process')">Process <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-fac" (click)="onSort('Facility')">Fac <i class="bi bi-arrow-down-up ms-1 small"></i>
+                    </th>
+                    <th class="col-partno" (click)="onSort('PartNo')">Part No. <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-itemno" (click)="onSort('ItemNo')">Item No. <i
+                            class="bi bi-arrow-down-up ms-1 small"></i></th>
+                    <th class="col-itemname" (click)="onSort('ItemName')">Item Name</th>
+                    <th class="col-spec no-sort">Spec</th>
+                    <th class="col-qty" (click)="onSort('QTY')">QTY</th>
+                    <th class="col-usage" (click)="onSort('Used_Qty')">Usage ที่ใช้ไป</th>
+                    <th class="col-phone no-sort">Phone</th>
+                    <th class="col-confirm no-sort">Confirm</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="Division_ && displayedReturns.length === 0">
+                    <td colspan="16" class="text-center text-muted" style="padding: 2rem;">No items found. /
+                        ไม่พบข้อมูล</td>
+                </tr>
+                <tr *ngFor="let item of displayedReturns; let i = index">
+                    <td class="col-checkbox">
+                        <input type="checkbox" [(ngModel)]="item.Selection">
+                    </td>
+                    <td class="col-no">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                    <td class="text-primary fw-bold">{{ item.Doc_No }}</td>
+                    <td>{{ item.Return_Date | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ item.Return_By }}</td>
+                    <td>{{ item.DisplayDivision || item.Division }}</td>
+                    <td>{{ item.Process }}</td>
+                    <td>{{ item.Facility }}</td>
+                    <td>{{ item.PartNo }}</td>
+                    <td>{{ item.ItemNo }}</td>
+                    <td>{{ item.ItemName }}</td>
+                    <td>{{ item.Spec }}</td>
+                    <td class="fw-bold">{{ item.QTY }}</td>
+                    <td class="fw-bold text-danger">{{ item.Used_Qty !== null ? item.Used_Qty : '-' }}</td>
+                    <td>{{ item.Phone_No }}</td>
+                    <td>
+                        <button class="btn-ok" [disabled]="item.Status === 'Complete'"
+                            [style.opacity]="item.Status === 'Complete' ? '0.5' : '1'" (click)="confirmReturn(item)">
+                            {{ item.Status === 'Complete' ? 'Done' : 'OK' }}
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="totalPages > 1">
+        <ul class="pagination">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="onPageChange(1)"><i class="bi bi-chevron-double-left"></i></a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="onPageChange(currentPage - 1)"><i class="bi bi-chevron-left"></i></a>
+            </li>
+            <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+                <a class="page-link" (click)="onPageChange(page)">{{ page }}</a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" (click)="onPageChange(currentPage + 1)"><i class="bi bi-chevron-right"></i></a>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" (click)="onPageChange(totalPages)"><i class="bi bi-chevron-double-right"></i></a>
+            </li>
+        </ul>
+        <small>
+            Page {{ currentPage }} of {{ totalPages }} (Total {{ filteredReturns.length }} items)
+        </small>
+    </div>
+</div>

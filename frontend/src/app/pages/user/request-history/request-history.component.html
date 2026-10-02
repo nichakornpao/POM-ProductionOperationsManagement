@@ -1,0 +1,352 @@
+<div class="content-area">
+
+  <div class="main-header">
+    <div class="header-left">
+      <h4>Request History</h4>
+      <span class="breadcrumb-label">History Log</span>
+    </div>
+  </div>
+
+  <!-- Toolbar: Division Toggle, Clear, Export -->
+  <div class="box-input">
+    <div class="form-input">
+
+      <!-- Division Toggle (Identical to Return History style) -->
+      <div class="division-toggle me-auto">
+        <div class="btn-group" role="group">
+          <button type="button" class="btn"
+            [class.btn-primary]="selectedDivisions.includes('7122') && selectedDivisions.length === 1"
+            [class.btn-outline-primary]="!(selectedDivisions.includes('7122') && selectedDivisions.length === 1)"
+            (click)="setDivisionFilter('7122')">GM</button>
+          <button type="button" class="btn"
+            [class.btn-primary]="selectedDivisions.includes('71DZ') && selectedDivisions.length === 1"
+            [class.btn-outline-primary]="!(selectedDivisions.includes('71DZ') && selectedDivisions.length === 1)"
+            (click)="setDivisionFilter('71DZ')">PMC</button>
+          <button type="button" class="btn" [class.btn-primary]="selectedDivisions.length === 0"
+            [class.btn-outline-primary]="selectedDivisions.length !== 0" (click)="setDivisionFilter('')">ALL</button>
+        </div>
+      </div>
+
+      <div class="status-filter ms-3" style="width: 250px;">
+        <ng-select class="premium-select" [items]="statusList" bindLabel="label" bindValue="value"
+          [(ngModel)]="selectedStatuses" [multiple]="true" [closeOnSelect]="false" placeholder="Filter by Status"
+          (change)="onFilter()">
+        </ng-select>
+      </div>
+
+      <div class="button-clear ms-3">
+        <button class="btn btn-clear" type="button" (click)="clearAll()">
+          CLEAR ALL <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+      <div class="button-group ms-3">
+        <button class="excel-button btn btn-success" type="button" (click)="exportExcel()">
+          <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="table-responsive" #tableScroll>
+    <table class="table table-hover align-middle text-center" id="table-data">
+
+      <!-- Table Headers -->
+      <thead class="table-light">
+        <tr>
+          <th style="width: 50px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">NO.</div>
+          </th>
+
+          <th style="width: 150px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('MR_No')" class="sortable">
+                M/R NO. <span *ngIf="sortKey === 'MR_No'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+
+          <!-- 🔄 STATUS and DATE COMPLETE positioned after M/R NO. -->
+          <th style="width: 160px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('Status')" class="sortable">
+                STATUS <span *ngIf="sortKey === 'Status'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+          <th style="width: 200px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('DateComplete')" class="sortable">
+                DATE COMPLETE <span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+
+          <th style="width: 120px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('MFGOrderNo')" class="sortable">
+                ORDERS <span *ngIf="sortKey === 'MFGOrderNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+          <th style="width: 150px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('DocNo')" class="sortable">
+                DOCUMENT <span *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+          <th style="width: 150px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('DateTime_Record')" class="sortable">
+                REQ DATE <span *ngIf="sortKey === 'DateTime_Record'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+              <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                <i class="bi bi-funnel-fill filter-icon" [class.active]="fromDate || toDate"
+                  (click)="toggleFilter('DateTime_Record')"></i>
+                <div class="filter-dropdown date-filter" *ngIf="activeFilter === 'DateTime_Record'">
+                  <label class="dropdown-label">From:</label>
+                  <input type="date" class="premium-input w-100 mb-2" [(ngModel)]="fromDate" (change)="onFilter()">
+                  <label class="dropdown-label">To:</label>
+                  <input type="date" class="premium-input w-100" [(ngModel)]="toDate" (change)="onFilter()">
+                </div>
+              </div>
+            </div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('DueDate')" class="sortable">
+                DUE DATE <span *ngIf="sortKey === 'DueDate'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+            </div>
+          </th>
+          <th style="width: 150px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">REQ BY</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('Division')" class="sortable">
+                DIV <span *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+              <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedDivisions.length > 0"
+                  (click)="toggleFilter('Division')"></i>
+                <div class="filter-dropdown" *ngIf="activeFilter === 'Division'">
+                  <ng-select class="premium-select" [items]="divisionList" bindLabel="label" bindValue="value"
+                    [(ngModel)]="selectedDivisions" [multiple]="true" [closeOnSelect]="false" placeholder="Select Div"
+                    appendTo="body" (change)="onFilter()"></ng-select>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('PartNo')" class="sortable">
+                PART NO. <span *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+              <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedPartNos.length > 0"
+                  (click)="toggleFilter('PartNo')"></i>
+                <div class="filter-dropdown" *ngIf="activeFilter === 'PartNo'">
+                  <ng-select class="premium-select" [items]="partNoList" bindLabel="label" bindValue="value"
+                    [(ngModel)]="selectedPartNos" [multiple]="true" [closeOnSelect]="false" placeholder="Select PartNo"
+                    appendTo="body" (change)="onFilter()"></ng-select>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span>PROCESS</span>
+              <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedProcesses.length > 0"
+                  (click)="toggleFilter('Process')"></i>
+                <div class="filter-dropdown" *ngIf="activeFilter === 'Process'">
+                  <ng-select class="premium-select" [items]="processList" bindLabel="label" bindValue="value"
+                    [(ngModel)]="selectedProcesses" [multiple]="true" [closeOnSelect]="false"
+                    placeholder="Select Process" appendTo="body" (change)="onFilter()"></ng-select>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">FAC</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">MC TYPE</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">MC NO</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">CASE</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">
+              <span (click)="onSort('ItemNo')" class="sortable">
+                ITEM NO. <span *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span>
+              </span>
+              <div class="filter-wrapper" (click)="$event.stopPropagation()">
+                <i class="bi bi-funnel-fill filter-icon" [class.active]="selectedItemNos.length > 0"
+                  (click)="toggleFilter('ItemNo')"></i>
+                <div class="filter-dropdown" *ngIf="activeFilter === 'ItemNo'">
+                  <ng-select class="premium-select" [items]="itemNoList" bindLabel="label" bindValue="value"
+                    [(ngModel)]="selectedItemNos" [multiple]="true" [closeOnSelect]="false" placeholder="Select ItemNo"
+                    appendTo="body" (change)="onFilter()"></ng-select>
+                </div>
+              </div>
+            </div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">ITEM NAME</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">SPEC</div>
+          </th>
+          <th style="width: 100px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">Req_QTY</div>
+          </th>
+          <th style="width: 100px;" class="text-center column-header">
+            <div class="header-flex justify-content-center">Issue_QTY</div>
+          </th>
+          <th class="text-center column-header">
+            <div class="header-flex justify-content-center">PHONE</div>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- 🔍 Empty State -->
+        <tr *ngIf="!isLoading && filteredList.length === 0">
+          <td colspan="21" class="text-center text-muted py-5">
+            <div class="no-data-content">
+              <i class="bi bi-clock-history d-block mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+              <h5 class="fw-light">No Request History Found</h5>
+              <p class="small text-secondary">Try adjusting your filters or search criteria.</p>
+            </div>
+          </td>
+        </tr>
+
+        <!-- 📋 Grouped Data Rows -->
+        <ng-container *ngFor="let group of paginatedGroupedList; let i = index">
+          <!-- Parent / Request Row -->
+          <tr class="accordion-header-row" (click)="toggleGroup(group)" [class.expanded]="group.isExpanded">
+            <td class="accordion-toggle-cell">
+              <span class="accordion-index">{{ (currentPage - 1) * pageSize + i + 1 }}</span>
+              <i class="bi accordion-chevron" [ngClass]="group.isExpanded ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+            </td>
+            <td class="text-center primary-data fs-6 text-primary fw-bold" style="letter-spacing: -0.01em;">{{
+              group.MR_No || '-' }}</td>
+
+            <!-- 🔄 STATUS and DateComplete Cells -->
+            <td class="text-center">
+              <span class="status-badge" [ngClass]="{
+                                    'waiting': group.Status === 'Waiting',
+                                    'complete': group.Status === 'Complete'
+                                }">
+                {{ group.Status }}
+              </span>
+            </td>
+            <td class="text-center secondary-data">{{ group.DateComplete | date:'dd/MM/yy' }}</td>
+            <!-- <td class="text-center secondary-data">{{ group.DateComplete | date:'dd/MM/yy HH:mm' }}</td> -->
+
+            <!-- Item Count representation for MFG/DOC -->
+            <td class="text-center" style="vertical-align: middle;">
+              <span class="accordion-badge px-3 py-1">
+                {{ group.items.length }} {{ group.items.length > 1 ? 'orders' : 'order' }}
+              </span>
+            </td>
+            <td class="text-center text-muted">-</td> <!-- DOCUMENT placeholder for parent -->
+            <td class="text-center secondary-data fw-bold">{{ group.DateTime_Record | date:'dd/MM/yy' }}</td>
+            <td class="text-center secondary-data">{{ group.items[0]?.DueDate | date:'dd/MM/yy' }}</td>
+            <td class="text-center text-dark fw-bold">{{ group.Requester }}</td>
+            <td class="text-center"><span class="fw-bold text-primary">{{ group.Division }}</span></td>
+
+            <td colspan="2" class="text-center text-muted">-</td> <!-- PartNo, Process -->
+            <td class="text-center secondary-data">{{ group.Fac }}</td>
+
+            <td colspan="8" class="text-center text-muted">-</td> <!-- MC Type... to Issue Qty -->
+            <td class="text-center secondary-data">{{ group.PhoneNo || '-' }}</td>
+          </tr>
+
+          <!-- Child / Order Detail Rows -->
+          <ng-container *ngIf="group.isExpanded">
+            <tr *ngFor="let item of group.items; let j = index" class="accordion-detail-row"
+              style="background-color: #f8fafc; border-left: 3px solid #3b82f6;">
+              <td class="text-center text-muted" style="font-size: 0.85rem;">{{ j + 1 }}</td>
+              <td class="text-center text-muted">-</td> <!-- MR NO -->
+              <td class="text-center">
+                <span class="status-badge" [ngClass]="{
+                                        'waiting': item.Status === 'Waiting',
+                                        'complete': item.Status === 'Complete'
+                                    }">
+                  {{ item.Status || '-' }}
+                </span>
+              </td>
+              <td class="text-center">{{ item.DateComplete | date:'dd/MM/yy' }}</td>
+              <!-- <td class="text-center">{{ item.DateComplete | date:'dd/MM/yy HH:mm' }}</td> -->
+
+              <td class="text-center secondary-data">{{ item.MFGOrderNo || '-' }}</td>
+              <td class="text-center primary-data">{{ item.DocNo || '-' }}</td>
+              <td class="text-center text-muted">-</td> <!-- REQ DATE -->
+              <td class="text-center secondary-data">{{ item.DueDate | date:'dd/MM/yy' }}</td>
+              <td class="text-center text-muted">-</td> <!-- REQ BY -->
+              <td class="text-center text-muted">-</td> <!-- DIV -->
+              <td class="text-center fw-bold text-dark">{{ item.PartNo || '-' }}</td>
+              <td class="text-center secondary-data">{{ item.Process || '-' }}</td>
+              <td class="text-center text-muted">-</td> <!-- FAC -->
+              <td class="text-center secondary-data">{{ item.MCType || '-' }}</td>
+              <td class="text-center secondary-data">{{ item.MCNo || '-' }}</td>
+              <td class="text-center py-1">
+                <span class="badge bg-light text-secondary border">{{ item.CASE || '-' }}</span>
+              </td>
+
+              <td class="text-center primary-data text-primary">{{ item.ItemNo || '-' }}</td>
+              <td class="text-center secondary-data truncate-cell" [title]="item.ItemName || ''">{{ item.ItemName || '-'
+                }}</td>
+              <td class="text-center primary-data spec-truncate" [title]="item.SPEC || ''" style="font-size: 0.8rem;">{{
+                item.SPEC || '-' }}</td>
+              <td class="text-center">
+                <span class="badge bg-white text-dark border shadow-sm">{{ item.Req_QTY }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-white text-dark border shadow-sm">{{ item.QTY }}</span>
+              </td>
+              <td class="text-center text-muted">-</td> <!-- PHONE -->
+            </tr>
+          </ng-container>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Pagination Controls -->
+  <div class="pagination-container" *ngIf="groupedList.length > 0">
+    <div class="pagination-info">
+      Showing <b>{{ (currentPage - 1) * pageSize + 1 }}</b> to <b>{{ (currentPage * pageSize) >
+        groupedList.length ? groupedList.length : (currentPage * pageSize) }}</b> of <b>{{ groupedList.length
+        }}</b> requests
+    </div>
+    <nav aria-label="Page navigation">
+      <ul class="pagination mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="setPage(currentPage - 1)" aria-label="Previous">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+
+        <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+          <a class="page-link" (click)="setPage(page)">{{ page }}</a>
+        </li>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="setPage(currentPage + 1)" aria-label="Next">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+</div>

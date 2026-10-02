@@ -1,0 +1,385 @@
+@import '../../../styles.scss';
+
+// Sidebar Modern Styles (Glassmorphism & Expandable)
+.sidebar {
+  height: 100vh;
+  width: 100%; // Inherit width from .sidebar-container
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px); // More blur for premium feel
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.04);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1001;
+  color: var(--color-text-main);
+  overflow: hidden;
+
+
+
+
+  // --- Global Animation Trigger 1: Sidebar Hover ---
+  &:hover .sidebar-logo-container {
+    .brand-text span {
+      animation: waveJump 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .logo-slogan span {
+      animation: waveJumpDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  }
+
+  // --- Global Animation Trigger 2: Specific Logo Hover (Forces Replay) ---
+  // Using a DIFFERENT animation name (even if keyframes are identical) forces the browser to restart the animation
+  .sidebar-logo-container:hover {
+    .brand-text span {
+      animation: waveJump2 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .logo-slogan span {
+      animation: waveJumpDown2 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+  }
+
+  .top {
+    display: flex;
+    flex-direction: column;
+    padding-top: 24px;
+
+    // Logo Styles
+    .sidebar-logo-container {
+      padding: 0 12px 20px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      cursor: pointer; // Interactive
+      user-select: none; // Prevent text selection
+      -webkit-user-select: none; // Safari/Chrome support
+
+      // Inner wrapper to constrain widths relative to each other
+      .logo-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+        gap: 2px; // Add a small physical gap between lines
+      }
+
+      // --- Animation Triggers moved to .sidebar:hover (above) ---
+
+      .minebea-logo {
+        margin-bottom: 0; // Removed negative margin to prevent collision
+        white-space: nowrap;
+        text-align: center;
+        line-height: 1;
+
+        .brand-text {
+          font-family: 'Arial', 'Helvetica', sans-serif;
+          font-size: 1.55rem;
+          font-weight: 900;
+          font-style: italic;
+          color: #005bb2;
+          letter-spacing: -1px;
+          display: block;
+
+          // Each letter wrapper
+          span {
+            display: inline-block;
+            transition: transform 0.3s ease;
+            transform-origin: bottom center;
+          }
+        }
+
+        // Sequential Delays for 14 letters (MinebeaMitsumi)
+        @for $i from 1 through 14 {
+          .brand-text span:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.03}s; // Fixed: Used animation-delay for ripples
+          }
+        }
+      }
+
+      .logo-slogan {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0;
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        line-height: 1.2;
+
+        span {
+          font-size: 0.65rem;
+          font-weight: 700;
+          white-space: nowrap;
+          display: inline-block; // For transform
+          transition: transform 0.3s ease;
+        }
+
+        .text-red {
+          color: #E60012;
+        }
+
+        .text-blue {
+          color: #005bb2;
+        }
+
+        .italic {
+          font-style: italic;
+        }
+
+        // Sequential Delays for 6 words (Passion to Create Value through Difference)
+        @for $j from 1 through 6 {
+          span:nth-child(#{$j}) {
+            animation-delay: #{($j * 0.08) + 0.1}s; // Start after logo
+          }
+        }
+      }
+    }
+
+    // Keyframes 1: Sidebar Hover
+    @keyframes waveJump {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.1);
+        text-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    @keyframes waveJumpDown {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(5px) scale(1.1);
+        text-shadow: 0 -3px 5px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    // Keyframes 2: Logo Hover (Identical copy to force restart)
+    @keyframes waveJump2 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.1);
+        text-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    @keyframes waveJumpDown2 {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(5px) scale(1.1);
+        text-shadow: 0 -3px 5px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+
+    // Navigation Links
+    .nav-links {
+      list-style: none;
+      margin: 0;
+      padding: 0 8px; // Uniform padding for capsule look
+      font-size: 0.95rem;
+      cursor: pointer;
+
+      li {
+        margin-bottom: 0.4rem;
+        position: relative;
+
+        a {
+          color: #64748b;
+          display: flex;
+          align-items: center;
+          height: 48px;
+          margin: 0 4px; // Floating spacing effect
+          padding: 0;
+          border-radius: 24px; // Capsule shape
+          text-decoration: none;
+          position: relative;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          font-weight: 600;
+          white-space: nowrap;
+
+          // Icons
+          i {
+            min-width: 44px; // Re-centered for 64px bar (8px padding + 4px margin = 12px off-center)
+            font-size: 1.35rem;
+            color: #64748b;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+          }
+
+          .link-text {
+            transform: translateX(-8px);
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-left: 2px;
+            z-index: 2;
+          }
+
+          &:hover:not(.active) {
+            background-color: rgba(59, 130, 246, 0.06);
+            color: var(--color-primary);
+
+            i {
+              color: var(--color-primary);
+              transform: scale(1.1);
+            }
+          }
+
+          // Badge (Cart Notification)
+          span.cart-count {
+            position: absolute;
+            top: 6px;
+            left: 24px; // Positioned perfectly over the icon
+            background: #ef4444;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 99px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            z-index: 3;
+          }
+        }
+
+        // --- Active State (Floating Capsule) ---
+        &.active a {
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          color: white;
+          box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); // Soft glowing shadow
+          transform: translateY(-1px);
+
+          i {
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+
+          .link-text {
+            color: white;
+          }
+        }
+      }
+    }
+  }
+
+
+
+  // Professional Footer (Profile & Logout)
+  .sidebar-footer {
+    padding: 16px 8px; // Slimmer padding
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+    .user-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-left: 2px;
+
+      .avatar-container {
+        position: relative;
+
+        .avatar-circle {
+          width: 40px; // Slightly smaller for 64px width
+          height: 40px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, var(--color-primary), #60a5fa);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 1rem;
+          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+        }
+      }
+
+      .user-info {
+        flex: 1;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+
+        .user-name {
+          display: block;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #1e293b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .user-role {
+          display: block;
+          font-size: 0.7rem;
+          color: #94a3b8;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    .btn-logout-premium {
+      width: 100%;
+      height: 40px; // Match avatar height
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      color: #64748b;
+      transition: all 0.25s ease;
+      overflow: hidden;
+
+      .icon-wrapper {
+        min-width: 40px; // Match button height
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+      }
+
+      .logout-text {
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+      }
+
+      &:hover {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #ef4444;
+      }
+    }
+  }
+
+
+}

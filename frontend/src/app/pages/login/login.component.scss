@@ -1,0 +1,310 @@
+// Variables
+$brand-color: #005BAC;
+$text-secondary: #e2e8f0;
+$navy-start: #1e3a8a; // from-blue-900
+$navy-mid: #000428; // via-[#000428]
+$black: #000000; // to-[#000000]
+
+// Main Container
+.login-page-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+
+  // Exact Gradient requested: bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900 via-[#000428] to-[#000000]
+  background: radial-gradient(ellipse at center, $navy-start 0%, $navy-mid 50%, $black 100%);
+  font-family: 'Kanit', sans-serif;
+}
+
+// Flow Field Particle Canvas
+.particle-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; // Between gradient bg (0) and login card (z-index:10)
+  background: transparent; // Gradient from .login-page-container shows through
+  pointer-events: none; // Never intercepts clicks or form input
+  display: block;
+}
+
+// SVG Header
+.svg-header-container {
+  z-index: 10;
+  margin-bottom: 2.5rem;
+  width: 100%;
+  max-width: 56rem;
+  padding: 0 1rem;
+  text-align: center;
+  user-select: none; // Disable text selection
+
+  svg {
+    width: 100%;
+    height: auto;
+    // Reduced — the SVG filter handles depth now
+    filter: drop-shadow(0 2px 6px rgba(1, 9, 24, 0.6));
+  }
+}
+
+// SVG Text Styles — Legibility-First Celestial Serif
+.brand-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 82px;
+  font-weight: 900;
+  font-style: italic;
+
+  // Celestial silver-indigo gradient fill
+  fill: url(#brandFill);
+  fill-opacity: 0;
+
+  // Dark navy outline — KEY legibility fix, pops text off busy starfield
+  stroke: #0c1832;
+  stroke-width: 3.5px;
+  paint-order: stroke fill; // stroke renders BEHIND fill
+
+  // Subtle depth glow via SVG filter (dark shadow + soft blue halo)
+  filter: url(#brandGlow);
+
+  // Simple fade-in (no dasharray stroke-draw — serif at 900 has complex paths)
+  animation: fadeInBrand 1.6s cubic-bezier(0.39, 0.575, 0.565, 1) 0.3s forwards;
+
+  // Interactive char hover
+  .hover-char {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: default;
+
+    &:hover {
+      transform: translateY(-12px);
+      fill: #f0faff; // icy white on hover
+      stroke: #0c1832; // keep navy outline on hover too
+    }
+  }
+}
+
+// Shimmer — intermittent stardust glimmer, less frequent than before
+.brand-shimmer {
+  fill: url(#shimmerGradCSS);
+  opacity: 0.80;
+  pointer-events: none;
+  // 9s total: ~1.5s sweep + 7.5s pause; starts after brand fade-in
+  animation: shimmerSweep 9s ease-in-out infinite;
+  animation-delay: 3.5s;
+}
+
+.sub-text {
+  font-family: 'Kanit', sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  fill: $text-secondary;
+  fill-opacity: 0;
+  stroke: $text-secondary;
+  stroke-width: 0.8px;
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation:
+    drawStroke 2s cubic-bezier(0.55, 0.055, 0.675, 0.19) 1s forwards,
+    fadeInFill 1s cubic-bezier(0.39, 0.575, 0.565, 1) 2.5s forwards;
+
+  .hover-char-sub {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.2s, stroke 0.2s;
+    transform-box: fill-box;
+    transform-origin: center;
+    cursor: default;
+
+    // Random Minimal Colors Palette (Cool Tones)
+    $colors: #38bdf8, #818cf8, #2dd4bf, #a78bfa, #f472b6, #fbbf24;
+
+    @for $i from 1 through 6 {
+      &:nth-child(6n + #{$i}):hover {
+        transform: translateY(-10px);
+        fill: nth($colors, $i);
+        stroke: nth($colors, $i);
+        filter: drop-shadow(0 0 5px nth($colors, $i)); // Glow effect
+      }
+    }
+  }
+}
+
+// Login Card (Restored Style)
+.login-card-entrance {
+  z-index: 10;
+  width: 100%;
+  max-width: 400px;
+  background-color: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  padding: 2.5rem;
+
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+}
+
+// Form Elements
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155; // slate-700
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.25rem;
+
+  .icon-wrapper {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 1rem;
+    color: #94a3b8; // slate-400
+    pointer-events: none;
+    font-size: 1.1rem;
+    z-index: 10;
+  }
+
+  input {
+    width: 100%;
+    height: 50px;
+    padding: 0 1rem 0 3rem; // Left padding for icon
+    border: 1px solid #cbd5e1; // slate-300
+    border-radius: 0.75rem;
+    outline: none;
+    transition: all 0.2s;
+    font-size: 1rem;
+    color: #1e293b; // slate-800
+    background-color: #f8fafc; // slate-50
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+
+    &:focus {
+      background-color: white;
+      border-color: #3b82f6; // blue-500
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    &.password-input {
+      padding-right: 1rem; // Reset padding (no toggle inside)
+    }
+  }
+
+  .toggle-password-btn {
+    display: none; // Hide old button style if present
+  }
+}
+
+.submit-btn {
+  width: 100%;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  color: white;
+  font-weight: 700;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Footer
+.footer-text {
+  position: absolute;
+  bottom: 1.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  width: 100%;
+}
+
+// Keyframes
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fadeInBrand {
+  from {
+    fill-opacity: 0;
+    opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInFill {
+  from {
+    fill-opacity: 0;
+  }
+
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes slideUpFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Shimmer sweep: glint moves left→right across the text, then long pause
+// 9s cycle: 0–16% = sweep transit, 16–100% = invisible pause
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  14% {
+    transform: translateX(310%);
+    opacity: 0.85;
+  }
+
+  18% {
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(310%);
+    opacity: 0;
+  }
+}

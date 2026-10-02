@@ -1,0 +1,834 @@
+// --- 1. Main Layout ---
+.layout {
+  display: flex;
+  min-height: 100vh; // Allow scrolling
+  width: 100%;
+  background-color: var(--color-bg);
+
+  .content-area {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background-color: var(--color-bg);
+    overflow: visible; // Let window scroll
+
+    // Header aligned with Request page
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+
+      h4 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+      }
+    }
+
+    p {
+      color: #475569;
+      font-size: 0.9rem;
+      margin-top: 0.15rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 16px;
+        background: linear-gradient(180deg, #3b82f6, #60a5fa);
+        border-radius: 2px;
+      }
+    }
+  }
+}
+
+// --- 2. Top Controls ---
+.top-controls {
+  background-color: var(--color-surface);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  align-items: end;
+  z-index: 100;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #374151;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0px;
+    }
+
+    // Modernize ng-select
+    ::ng-deep .ng-select-container {
+      min-height: 40px !important;
+      height: 40px !important;
+      border-radius: var(--radius-md) !important;
+      border-color: var(--color-border) !important;
+      background-color: #f9fafb !important;
+
+      &:hover {
+        border-color: var(--color-primary) !important;
+      }
+    }
+  }
+
+  .excel-buttons {
+    display: flex;
+    gap: 1.2rem;
+    grid-column: span 3;
+    justify-content: flex-end;
+
+    .btn-premium {
+      color: white;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      height: 40px;
+
+      i {
+        font-size: 1rem;
+      }
+
+      &.upload {
+        background: #10b981; // Solid emerald for cleaner look
+
+        &:hover {
+          background: #059669;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+      }
+
+      &.download {
+        background: #0ea5e9; // Solid sky
+
+        &:hover {
+          background: #0284c7;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// --- 3. Table Container ---
+.table-container {
+  background: var(--color-surface);
+  padding: 0; // Padding handled by cells
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  position: relative;
+  z-index: 1; // Base z-index
+  overflow-x: auto;
+  // min-height: 300px; // Remove fixed min-height to fit content equivalent
+  background-color: white;
+
+  table {
+    width: 100%;
+    min-width: 1900px;
+    border-collapse: collapse;
+
+    thead {
+      th {
+        // Modern Table Header
+        background-color: #f8fafc;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        span {
+          margin-left: 2px;
+        }
+
+        &.col-no {
+          width: 50px;
+          text-align: center;
+        }
+
+        &.col-date {
+          width: 140px;
+          /* Further increased to guarantee no truncation */
+        }
+
+        &.col-machine {
+          width: 280px;
+          min-width: 160px;
+        }
+
+        &.col-fac {
+          width: 120px;
+        }
+
+        &.col-bar {
+          width: 280px;
+          min-width: 160px;
+        }
+
+        &.col-mc {
+          width: 110px;
+          min-width: 110px;
+        }
+
+        &.col-process {
+          width: 220px;
+          min-width: 150px;
+        }
+
+        &.col-part {
+          width: 220px;
+          min-width: 220px;
+        }
+
+        &.col-qty {
+          width: 70px;
+          min-width: 70px;
+          text-align: center;
+        }
+
+        &.col-time {
+          width: 70px;
+          min-width: 70px;
+        }
+
+        &.col-comment {
+          min-width: 300px;
+        }
+
+        &.col-action {
+          width: 100px;
+          text-align: center;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        transition: background-color 0.15s;
+
+        // --- Important Columns (PD QTY, Time, MC QTY, Comment) ---
+        // Offset by +2 due to Checkbox and NO. columns
+        td:nth-child(11),
+        td:nth-child(12),
+        td:nth-child(13),
+        td:nth-child(14) {
+          input {
+            font-weight: 600;
+            color: var(--color-text-main);
+            line-height: normal !important;
+          }
+        }
+
+        input[type=number] {
+          /* Hide spin buttons to look like text box */
+          appearance: textfield;
+          -moz-appearance: textfield;
+          text-align: center;
+          padding: 0 4px !important;
+          height: 38px !important;
+          line-height: normal !important;
+
+          &::-webkit-inner-spin-button,
+          &::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+        }
+
+        // --- Action Column ---
+        td:last-child {
+          text-align: center;
+        }
+
+        &:hover {
+          background-color: #eff6ff;
+        }
+
+        td {
+          padding: 0.75rem 1rem;
+          font-size: 14px;
+          color: #374151;
+          border-bottom: 1px solid var(--color-border);
+          vertical-align: middle;
+
+          &.text-center {
+            text-align: center;
+          }
+
+          input {
+            width: 100%;
+            height: 38px;
+            /* Standardize to 38px */
+            line-height: normal !important;
+            padding: 0 10px;
+            border: 1px solid var(--color-border);
+            background-color: white;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            color: #374151;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+            &:hover {
+              border-color: #94a3b8;
+            }
+
+            &:focus {
+              border-color: var(--color-primary);
+              box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+              outline: none;
+            }
+          }
+
+          // Mat Form Field for Date โ€” Prevent truncation
+          mat-form-field {
+            width: 140px !important;
+            /* Match column header */
+          }
+
+          ::ng-deep .mat-mdc-text-field-wrapper {
+            height: 38px !important;
+            padding: 0 4px 0 8px !important;
+            /* Left padding for text, minimal right */
+            background-color: transparent !important;
+          }
+
+          ::ng-deep .mat-mdc-form-field-flex {
+            height: 38px !important;
+            align-items: center !important;
+            display: flex !important;
+          }
+
+          ::ng-deep .mat-mdc-form-field-infix {
+            padding: 0 !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            display: flex !important;
+            align-items: center !important;
+            flex: 1 !important;
+            min-width: 0 !important;
+          }
+
+          ::ng-deep .mat-mdc-icon-button.mat-mdc-button-base {
+            width: 32px !important;
+            height: 32px !important;
+            padding: 4px !important;
+            flex-shrink: 0 !important;
+          }
+
+          ::ng-deep input.mat-mdc-input-element {
+            margin-top: 0 !important;
+            line-height: normal !important;
+            padding-right: 2px !important;
+            /* Minimal internal padding */
+            font-size: 14px !important;
+            letter-spacing: -0.5px !important;
+            /* Compact text slightly to ensure fit */
+            text-align: left !important;
+            width: 100% !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// --- 4. Action Buttons ---
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-bottom: 2rem;
+
+  .btn-add {
+    background: #10b981;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.15);
+
+    &:hover {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.96);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      background: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .btn-delete-all {
+    background: #fee2e2; // Red 100
+    color: #ef4444; // Red 500
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid #fecaca; // Red 200
+    border-radius: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+
+    &:hover {
+      background: #ef4444;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.96);
+    }
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--color-primary), #2563eb);
+    color: white;
+    padding: 0.8rem 3.5rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: antigravity-float 2s ease-in-out infinite;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &:hover {
+      animation-play-state: paused;
+      transform: scale(1.05);
+      box-shadow:
+        0 8px 15px -3px rgba(59, 130, 246, 0.6),
+        0 0 20px rgba(59, 130, 246, 0.4);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .btn-clear {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #6b7280;
+    padding: 0.6rem 1.5rem;
+    border-radius: 50px; // Rounded pills
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    &:hover {
+      background-color: #fee2e2;
+      color: #ef4444;
+      border-color: #ef4444;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.98);
+    }
+  }
+}
+
+// Delete Button
+// Delete Button (Solid Red Pill)
+.btn-delete {
+  background-color: #ef4444; // Red 500
+  color: white;
+  border: none;
+  border-radius: 50px; // Pill Shape
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+
+  &:hover {
+    background-color: #dc2626; // Red 600
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+    background-color: #b91c1c; // Red 700
+  }
+}
+
+// Global overrides
+::ng-deep .ng-dropdown-panel {
+  z-index: 9999 !important; // Absolute top
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+// Top Controls - Loading Indicator
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  animation: fadeIn 0.3s ease-out;
+
+  .loading-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #e2e8f0;
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+// --- 5. PrimeNG Calendar Overrides ---
+::ng-deep {
+  .p-calendar {
+    width: 100% !important;
+    position: relative;
+    display: flex !important;
+    align-items: center;
+
+    .p-inputtext {
+      width: 100% !important;
+      height: 36px !important;
+      /* MATCH Table Input Height */
+      padding: 0 35px 0 12px !important;
+      /* Extra space on right for icon */
+      border: 1px solid var(--color-border) !important;
+      background-color: white !important;
+      border-radius: var(--radius-md) !important;
+      font-size: 0.9rem !important;
+      color: var(--color-text-main) !important;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      font-family: var(--font-primary) !important;
+      box-shadow: none !important;
+
+      &::placeholder {
+        color: #94a3b8;
+        opacity: 0.8;
+      }
+
+      &:hover {
+        border-color: #94a3b8 !important;
+      }
+
+      &:focus {
+        border-color: var(--color-primary) !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        outline: none !important;
+      }
+    }
+
+    .p-datepicker-trigger {
+      position: absolute !important;
+      right: 8px !important;
+      background: transparent !important;
+      border: none !important;
+      color: #64748b !important;
+      width: 24px !important;
+      height: 24px !important;
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer;
+      z-index: 1;
+
+      &:hover {
+        color: var(--color-primary) !important;
+      }
+
+      .p-icon,
+      i {
+        font-size: 0.9rem !important;
+      }
+    }
+  }
+}
+
+
+@keyframes antigravity-float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===== Main Header (Standardized) =====
+.main-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 12px;
+  min-height: 48px;
+  animation: slideDown 0.4s ease-out;
+
+  .header-left {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-shrink: 0;
+
+    h4 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin: 0;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .breadcrumb-label {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &::before {
+        content: '|';
+        color: #cbd5e1;
+        font-weight: 300;
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// --- Turtle Custom SweetAlert Styles ---
+::ng-deep .swal-turtle-popup-success {
+  border-radius: 20px !important;
+  background-color: #eafce3 !important;
+  padding: 2rem 1.5rem 1rem 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 4px solid #fff !important;
+}
+
+::ng-deep .swal-turtle-popup-error {
+  border-radius: 20px !important;
+  background-color: #fcebdc !important;
+  padding: 2rem 1.5rem 1rem 1.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 4px solid #fff !important;
+}
+
+::ng-deep .swal-turtle-btn-success {
+  background: #2e7d32 !important;
+  color: white !important;
+  border-radius: 50px !important;
+  padding: 12px 35px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-family: 'Kanit', sans-serif !important;
+  box-shadow: 0 4px 6px -1px rgba(46, 125, 50, 0.3) !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #1b5e20 !important;
+    transform: translateY(-2px);
+  }
+}
+
+::ng-deep .swal-turtle-btn-error {
+  background: #c62828 !important;
+  color: white !important;
+  border-radius: 50px !important;
+  padding: 12px 35px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-family: 'Kanit', sans-serif !important;
+  box-shadow: 0 4px 6px -1px rgba(198, 40, 40, 0.3) !important;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #b71c1c !important;
+    transform: translateY(-2px);
+  }
+}
+
+::ng-deep .swal-turtle-actions {
+  margin-top: 20px !important;
+}
+
+// --- Turtle Animations ---
+@keyframes turtle-walk-forward {
+  0% {
+    transform: translateX(20px) translateY(5px) rotate(-1deg);
+  }
+
+  25% {
+    transform: translateX(5px) translateY(0px) rotate(1deg);
+  }
+
+  50% {
+    transform: translateX(-10px) translateY(5px) rotate(-1deg);
+  }
+
+  75% {
+    transform: translateX(-25px) translateY(0px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateX(-40px) translateY(5px) rotate(-1deg);
+  }
+}
+
+@keyframes turtle-leg-swing {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px) rotate(10deg);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+::ng-deep .walking-turtle-group {
+  animation: turtle-walk-forward 6s linear infinite alternate;
+}
+
+::ng-deep .turtle-leg-back {
+  animation: turtle-leg-swing 1s ease-in-out infinite alternate;
+  transform-origin: center top;
+}
+
+::ng-deep .turtle-leg-front {
+  animation: turtle-leg-swing 1s ease-in-out infinite alternate-reverse;
+  transform-origin: center top;
+}

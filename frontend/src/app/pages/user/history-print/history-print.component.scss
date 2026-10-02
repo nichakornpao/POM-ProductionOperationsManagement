@@ -1,0 +1,212 @@
+// Variables
+$primary-color: #2563eb;
+$background-color: #f1f5f9;
+$card-bg: #FFFFFF;
+$text-main: #1e293b;
+$text-secondary: #64748b;
+$border-color: #e2e8f0;
+$hover-color: #f8fafc;
+$radius: 12px;
+
+.content-area {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background-color: var(--color-bg, $background-color);
+  min-height: calc(100vh - 64px);
+
+  // ===== main-header (Standardized) =====
+  .main-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 4px;
+    min-height: 48px;
+    animation: slideDown 0.4s ease-out;
+
+    .header-left {
+      flex: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+
+      h4 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+      }
+
+      .breadcrumb-label {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        &::before {
+          content: '|';
+          color: #cbd5e1;
+          font-weight: 300;
+        }
+      }
+    }
+  }
+
+  // Toolbar
+  .box-input {
+    margin-bottom: 0;
+
+    .form-input {
+      display: flex;
+      align-items: flex-end;
+      gap: 1.5rem;
+      width: 100%;
+
+      .group-select {
+        display: flex;
+        flex-direction: column;
+        width: 320px;
+
+        label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: $text-secondary;
+          margin-bottom: 6px;
+        }
+      }
+
+      .button-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+    }
+  }
+
+  // Premium Buttons
+  .btn {
+    height: 40px;
+    padding: 0 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+    cursor: pointer;
+
+    &-primary {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+      &:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+      }
+    }
+
+    &-outline-secondary {
+      background: white;
+      border-color: #d1d5db;
+      color: #4b5563;
+
+      &:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+        transform: translateY(-1px);
+      }
+    }
+
+    i {
+      font-size: 1.1rem;
+    }
+  }
+
+  // 📊 Table Styling
+  .table-responsive {
+    background: white;
+    border-radius: $radius;
+    border: 1px solid $border-color;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 0;
+
+      thead tr th {
+        background-color: #eff6ff; // Light Blue
+        color: #1e3a8a; // Dark Blue
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #bfdbfe;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      tbody tr {
+        transition: background-color 0.15s ease;
+
+        td {
+          padding: 1rem;
+          border-bottom: 1px solid $border-color;
+          font-size: 0.85rem;
+          color: $text-main;
+          vertical-align: middle;
+        }
+
+        &:hover td {
+          background-color: $hover-color;
+        }
+
+        &:last-child td {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}
+
+// Typography Helper Classes
+.primary-data {
+  font-weight: 600 !important;
+  color: #1e293b !important;
+}
+
+.secondary-data {
+  font-weight: 400 !important;
+  color: #64748b !important;
+}
+
+.fw-medium {
+  font-weight: 500;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,847 @@
+.spin {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.table th {
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* Compact ng-select - matching Case Setup style */
+.no-expand {
+  .ng-select-container {
+    min-height: 31px !important;
+    height: 31px !important;
+    border-radius: 6px !important;
+    border: 1px solid #ced4da !important;
+    font-size: 0.875rem !important;
+    cursor: pointer !important;
+
+    .ng-value-container {
+      padding: 0 8px !important;
+      .ng-placeholder { color: #6c757d !important; }
+    }
+
+    .ng-arrow-wrapper {
+      width: 24px !important;
+      padding-right: 4px !important;
+      .ng-arrow {
+        border-color: #999 transparent transparent !important;
+        border-width: 5px 4px 2px !important;
+      }
+    }
+  }
+
+  &.ng-select-opened > .ng-select-container {
+    border-color: #4A9DEC !important;
+    box-shadow: 0 0 0 3px rgba(74, 157, 236, 0.2) !important;
+  }
+}
+
+/* Status Toggle Button Group - Uiverse by gharsh11032000 */
+.status-toggle-group {
+  display: flex;
+  gap: 10px;
+}
+
+.status-btn {
+  cursor: pointer;
+  position: relative;
+  padding: 5px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 34px;
+  background-color: transparent;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+  overflow: hidden;
+  white-space: nowrap;
+
+  // Default (ทั้งหมด) - Grey
+  color: #6c757d;
+  border: 2px solid #6c757d;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 50px;
+    height: 50px;
+    border-radius: inherit;
+    scale: 0;
+    z-index: -1;
+    background-color: #6c757d;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+  }
+  &:hover::before { scale: 3; }
+  &:hover {
+    color: #fff;
+    scale: 1.1;
+    box-shadow: 0 0 20px rgba(108, 117, 125, 0.4);
+  }
+  &:active { scale: 1; }
+
+  &.active {
+    color: #fff;
+    background-color: #6c757d;
+  }
+
+  // Wait Issue - Gold/Yellow
+  &.wait-issue {
+    color: rgb(193, 163, 98);
+    border-color: rgb(193, 163, 98);
+    &::before { background-color: rgb(193, 163, 98); }
+    &:hover {
+      color: #212121;
+      box-shadow: 0 0 20px rgba(193, 163, 98, 0.4);
+    }
+    &.active {
+      color: #212121;
+      background-color: rgb(193, 163, 98);
+    }
+  }
+
+  // Active - Primary (Blue)
+  &.active-status {
+    color: #0d6efd;
+    border-color: #0d6efd;
+    &::before { background-color: #0d6efd; }
+    &:hover {
+      color: #fff;
+      box-shadow: 0 0 20px rgba(13, 110, 253, 0.4);
+    }
+    &.active {
+      color: #fff;
+      background-color: #0d6efd;
+    }
+  }
+
+  // Issue Completed - Green
+  &.issue-completed {
+    color: #16a34a;
+    border-color: #16a34a;
+    &::before { background-color: #16a34a; }
+    &:hover {
+      color: #fff;
+      box-shadow: 0 0 20px rgba(22, 163, 74, 0.4);
+    }
+    &.active {
+      color: #fff;
+      background-color: #16a34a;
+    }
+  }
+}
+
+/* From Uiverse.io by Li-Deheng */ 
+.uiverse-clear-btn {
+  --main-size: 0.8em;
+  --color-text: #ffffff;
+  --color-background: #ff135a;
+  --color-background-hover: #ff1472;
+  --color-outline: #ff145a40;
+  --color-shadow: #00000040;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  border: none;
+  border-radius: calc(var(--main-size) * 100);
+  padding: 0.25em 0 0.25em 0.5em;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: var(--main-size);
+  color: var(--color-text);
+  background: var(--color-background);
+  box-shadow: 0 0 0.2em 0 var(--color-background);
+  transition: 1s;
+  height: 31px;
+}
+
+.uiverse-clear-btn:active {
+  transform: scale(0.95);
+}
+
+.uiverse-clear-btn:hover {
+  outline: 0.1em solid transparent;
+  outline-offset: 0.2em;
+  box-shadow: 0 0 1em 0 var(--color-background);
+  animation:
+    ripple 1s linear infinite,
+    colorize 1s infinite;
+  transition: 0.5s;
+}
+
+.uiverse-clear-btn span {
+  margin-right: 0.3em;
+  transition: 0.5s;
+}
+
+.uiverse-clear-btn:hover span {
+  text-shadow: 5px 5px 5px var(--color-shadow);
+}
+
+.uiverse-clear-btn:active span {
+  text-shadow: none;
+}
+
+.uiverse-clear-btn svg {
+  height: 0.8em;
+  fill: var(--color-text);
+  margin-right: -0.16em;
+  position: relative;
+  transition: 0.5s;
+}
+
+.uiverse-clear-btn:hover svg {
+  margin-right: 0.66em;
+  transition: 0.5s;
+  filter: drop-shadow(5px 5px 2.5px var(--color-shadow));
+}
+
+.uiverse-clear-btn:active svg {
+  filter: none;
+}
+
+.uiverse-clear-btn svg polygon:nth-child(1) {
+  transition: 0.4s;
+  transform: translateX(-60%);
+}
+
+.uiverse-clear-btn svg polygon:nth-child(2) {
+  transition: 0.5s;
+  transform: translateX(-30%);
+}
+
+.uiverse-clear-btn:hover svg polygon:nth-child(1) {
+  transform: translateX(0%);
+  animation: opacity 1s infinite 0.6s;
+}
+
+.uiverse-clear-btn:hover svg polygon:nth-child(2) {
+  transform: translateX(0%);
+  animation: opacity 1s infinite 0.4s;
+}
+
+.uiverse-clear-btn:hover svg polygon:nth-child(3) {
+  animation: opacity 1s infinite 0.2s;
+}
+
+@keyframes opacity {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes colorize {
+  0% {
+    background: var(--color-background);
+  }
+  50% {
+    background: var(--color-background-hover);
+  }
+  100% {
+    background: var(--color-background);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    outline: 0em solid transparent;
+    outline-offset: -0.1em;
+  }
+  50% {
+    outline: 0.2em solid var(--color-outline);
+    outline-offset: 0.2em;
+  }
+  100% {
+    outline: 0.4em solid transparent;
+    outline-offset: 0.4em;
+  }
+}
+
+/* From Uiverse.io by reglobby */ 
+.uiverse-input {
+  border: 1px solid #ced4da;
+  height: 31px;
+  padding-left: 0.8em;
+  outline: none;
+  overflow: hidden;
+  background-color: #ffffff;
+  border-radius: 6px;
+  transition: all 0.5s;
+  color: #333333;
+  font-size: 0.875rem;
+}
+
+.uiverse-input::placeholder {
+  color: #555555;
+  opacity: 1; /* Override Bootstrap default opacity */
+}
+
+.uiverse-input:hover,
+.uiverse-input:focus {
+  border: 2px solid #4A9DEC;
+  box-shadow: 0px 0px 0px 7px rgba(74, 157, 236, 0.2);
+  background-color: white;
+}
+
+/* From Uiverse.io by ilkhoeri */
+.action_has {
+  --color: 0 0% 60%;
+  --color-has: 211deg 100% 48%;
+  --sz: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--sz) * 2.5);
+  width: calc(var(--sz) * 2.5);
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.375rem;
+  border: 0.0625rem solid hsl(var(--color));
+  background: transparent;
+}
+
+.has_saved:hover {
+  border-color: hsl(var(--color-has));
+}
+.has_saved:hover svg {
+  color: hsl(var(--color-has));
+}
+
+.has_saved svg {
+  overflow: visible;
+  height: calc(var(--sz) * 1.75);
+  width: calc(var(--sz) * 1.75);
+  --ease: cubic-bezier(0.5, 0, 0.25, 1);
+  --zoom-from: 1.75;
+  --zoom-via: 0.75;
+  --zoom-to: 1;
+  --duration: 1s;
+}
+
+.has_saved:hover path[data-path="box"] {
+  transition: all 0.3s var(--ease);
+  animation: has-saved var(--duration) var(--ease) forwards;
+  fill: hsl(var(--color-has) / 0.35);
+}
+.has_saved:hover path[data-path="line-top"] {
+  animation: has-saved-line-top var(--duration) var(--ease) forwards;
+}
+.has_saved:hover path[data-path="line-bottom"] {
+  animation: has-saved-line-bottom var(--duration) var(--ease) forwards,
+    has-saved-line-bottom-2 calc(var(--duration) * 1) var(--ease) calc(var(--duration) * 0.75);
+}
+
+@keyframes has-saved-line-top {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+    d: path("M 3 5 L 3 8 L 3 8");
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+  }
+}
+@keyframes has-saved-line-bottom {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+    d: path("M 17 20 L 17 13 L 7 13 L 7 20");
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+    d: path("M 17 21 L 17 21 L 7 21 L 7 21");
+  }
+}
+@keyframes has-saved-line-bottom-2 {
+  from {
+    d: path("M 17 21 L 17 21 L 7 21 L 7 21");
+  }
+  to {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+    d: path("M 17 20 L 17 13 L 7 13 L 7 20");
+    fill: white;
+  }
+}
+@keyframes has-saved {
+  33.333% {
+    transform: rotate(0deg) translate(1px, 2px) scale(var(--zoom-from));
+  }
+  66.666% {
+    transform: rotate(20deg) translate(2px, -2px) scale(var(--zoom-via));
+  }
+  99.999% {
+    transform: rotate(0deg) translate(0px, 0px) scale(var(--zoom-to));
+  }
+}
+/* Uiverse.io Back Button by xopc333 */
+.uiverse-back-btn {
+  display: block;
+  position: relative;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  overflow: hidden;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  border: 0;
+}
+
+.uiverse-back-btn:before,
+.uiverse-back-btn:after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 7px;
+}
+
+.uiverse-back-btn:before {
+  border: 4px solid #f0eeef;
+  transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.uiverse-back-btn:after {
+  border: 4px solid #96daf0;
+  transform: scale(1.3);
+  transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+}
+
+.uiverse-back-btn:hover:before,
+.uiverse-back-btn:focus:before {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.uiverse-back-btn:hover:after,
+.uiverse-back-btn:focus:after {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.uiverse-back-btn .button-box {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 112px;
+  height: 56px;
+}
+
+.uiverse-back-btn .button-elem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  margin: 0;
+  transform: rotate(180deg);
+  fill: #f0eeef;
+}
+
+.uiverse-back-btn .button-elem svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.uiverse-back-btn:hover .button-box,
+.uiverse-back-btn:focus .button-box {
+  transition: 0.4s;
+  transform: translateX(-56px);
+}
+
+
+// --- Clean & Professional Modal Styles ---
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.4); // Light Slate Overlay
+  backdrop-filter: blur(8px); // Strong blur for focus
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 960px; // Wider to fit 3-col grid with fields comfortably
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); // Deep shadow
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  // Header: Minimal & Clean
+  .modal-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 16px 16px 0 0;
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #0f172a; // Slate 900 (Black-ish)
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .btn-close {
+      background: transparent;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      cursor: pointer;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 1.2rem;
+
+      &:hover {
+        background-color: #f8fafc;
+        color: #0f172a;
+        border-color: #cbd5e1;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 32px;
+    overflow-y: auto;
+
+    .premium-modal-section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #94a3b8; // Subdued section title
+      margin: 24px 0 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      i {
+        display: none;
+      }
+
+      // Hide icons for cleaner look
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+
+        &.full-width {
+          grid-column: span 3;
+        }
+
+        &.span-2 {
+          grid-column: span 2;
+        }
+
+        label {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #1e293b; // Slate 800
+          margin-bottom: 8px;
+        }
+
+        // Reference-style Inputs
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        select,
+        textarea,
+        ::ng-deep .p-inputtext {
+          width: 100%;
+          height: 46px; // Match Mat-Form-Field height
+          padding: 10px 14px;
+          border: 1px solid #e2e8f0; // Slate 200
+          border-radius: 8px;
+          background-color: #ffffff;
+          color: #0f172a;
+          font-size: 0.95rem;
+          line-height: 1.5;
+          transition: all 0.2s ease;
+          outline: none;
+
+          &::placeholder {
+            color: #cbd5e1;
+          }
+
+          &:hover {
+            border-color: #cbd5e1;
+          }
+
+          &:focus {
+            border-color: #0f172a; // Black border on focus
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05); // Subtle dark ring
+          }
+        }
+
+        textarea {
+          min-height: 100px;
+          resize: vertical;
+        }
+      }
+    }
+
+    // History Table specific styles
+    .table-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: none !important;
+
+      table {
+        width: 100%;
+
+        thead th {
+          background: #f8fafc;
+          font-weight: 600;
+          color: #475569;
+          text-transform: none; // Normal case headers
+          font-size: 0.85rem;
+          padding: 12px 16px;
+          border-bottom: 1px solid #e2e8f0;
+          box-shadow: none;
+        }
+
+        tbody td {
+          border-bottom: 1px solid #f1f5f9;
+          padding: 12px 16px;
+          color: #334155;
+        }
+
+        // --- History Row Styles ---
+        tbody tr {
+          &.history-latest {
+            background-color: #dcfce7 !important; // Green 100
+
+            td {
+              color: #15803d !important; // Green 700
+              font-weight: 600;
+              border-bottom: 1px solid #bbf7d0; // Green 200
+            }
+          }
+
+          &.history-old {
+            background-color: #f8fafc; // Slate 50
+
+            td {
+              color: #94a3b8 !important; // Slate 400 (Faint Gray)
+              font-style: italic;
+            }
+
+            &:hover {
+              background-color: #f1f5f9; // Slight darken on hover
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Footer: Clean & Right Aligned
+  .modal-footer {
+    padding: 20px 32px;
+    border-top: 1px solid #f1f5f9; // Very subtle separator
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background-color: #ffffff;
+    border-radius: 0 0 16px 16px;
+
+    button {
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-cancel {
+      background-color: #ffffff;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+
+      &:hover {
+        background-color: #f8fafc;
+        color: #0f172a;
+        border-color: #cbd5e1;
+      }
+    }
+
+    .btn-save {
+      background-color: #0f172a; // Slate 900 (Black)
+      color: #ffffff;
+      border: 1px solid transparent;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background-color: #1e293b;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* From Uiverse.io by yaasiinaxmed */
+.btn-uiverse-view {
+  --color: #0d6efd; /* Bootstrap primary color */
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  width: auto;
+  min-width: 5.5em;
+  height: 2.1em;
+  line-height: normal;
+  overflow: hidden;
+  cursor: pointer;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 1;
+  color: var(--color);
+  border: 1.5px solid var(--color);
+  border-radius: 50rem;
+  position: relative;
+  background: transparent;
+  padding: 0 1em;
+  transition: color 0.3s ease;
+}
+
+.btn-uiverse-view::before {
+  position: absolute;
+  content: "";
+  background: var(--color);
+  width: 150px;
+  height: 200px;
+  z-index: -1;
+  border-radius: 50%;
+  top: 100%;
+  left: 100%;
+  transition: 0.3s all;
+}
+
+.btn-uiverse-view:hover {
+  color: white;
+}
+
+.btn-uiverse-view:hover::before {
+  top: -30px;
+  left: -30px;
+}
+
+/* Custom scrollbar for MC No. box */
+.mc-scroll-box {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.mc-scroll-box::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mc-scroll-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mc-scroll-box::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.mc-scroll-box::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+

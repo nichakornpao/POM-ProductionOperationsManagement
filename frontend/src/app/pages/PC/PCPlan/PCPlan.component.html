@@ -1,0 +1,167 @@
+<div class="content-area">
+
+  <div class="main-header">
+    <div class="header-left">
+      <h4>Planning</h4>
+      <span class="breadcrumb-label">Planning List</span>
+    </div>
+  </div>
+
+  <div class="top-controls">
+    <div class="form-group" style="width: 280px;">
+      <label>Division</label>
+      <ng-select [(ngModel)]="selectedDivisionCode" [items]="divisionOptions" bindLabel="label" bindValue="code"
+        (change)="onDivisionChange()" [disabled]="isLoadingMasterData" placeholder="-- Select Division --"
+        [clearable]="false" style="width: 100%;">
+      </ng-select>
+      <div class="loading-indicator" *ngIf="isLoadingMasterData">
+        <span class="loading-spinner"></span>
+        <span>Loading basic data...</span>
+      </div>
+      <div class="loading-indicator" *ngIf="!isLoadingMasterData && isLoadingParts">
+        <span class="loading-spinner"></span>
+        <span>Loading parts... (You can select Machine/Fac)</span>
+      </div>
+    </div>
+
+
+
+    <div class="excel-buttons">
+
+      <input type="file" #fileInput (change)="onFileChange($event)" style="display: none;" accept=".xlsx, .xls" />
+
+      <button class="btn-premium upload" (click)="fileInput.click()">
+        <i class="bi bi-file-earmark-arrow-up"></i>
+        UPLOAD FOR EXCEL
+      </button>
+
+      <button class="btn-premium download" (click)="downloadFormat()">
+        <i class="bi bi-file-earmark-arrow-down"></i>
+        DOWNLOAD FORMAT
+      </button>
+
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-no">
+            <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleAll()"
+              style="width: 18px; height: 18px; cursor: pointer; vertical-align: middle;">
+          </th>
+          <th class="col-no">NO.</th>
+          <th class="col-date">Date <span style="color: red">*</span></th>
+          <th class="col-part">Part No. <span style="color: red">*</span></th>
+          <th class="col-part">Part Before</th>
+          <th class="col-process">Process <span style="color: red">*</span></th>
+          <th class="col-machine">Machine Type <span style="color: red">*</span></th>
+          <th class="col-bar">Bar Type</th>
+          <th class="col-fac">Fac <span style="color: red">*</span></th>
+          <th class="col-mc">MC No. <span style="color: red">*</span></th>
+          <th class="col-qty">PD QTY</th>
+          <th class="col-time">cycle time(sec)</th>
+          <th class="col-qty">MC QTY</th>
+          <th class="col-comment">Comment</th>
+          <th class="col-action">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of planItems; let i = index">
+          <td style="text-align: center;">
+            <input type="checkbox" [(ngModel)]="item.checked" (change)="checkAllSelected()"
+              style="width: 18px; height: 18px; cursor: pointer; vertical-align: middle;">
+          </td>
+          <td style="text-align: center; font-weight: 600; color: #64748b;">
+            {{ i + 1 }}
+          </td>
+
+          <td>
+            <mat-form-field appearance="outline" style="width: 100%;" subscriptSizing="dynamic">
+              <input matInput [matDatepicker]="picker" [(ngModel)]="item.date" placeholder="DD/MM/YYYY" [min]="minDate"
+                (dateChange)="saveCurrentState()" (click)="picker.open()" readonly>
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.partNo" [items]="partNos" appendTo="body" placeholder="Select"
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()" [searchFn]="customSearchFn">
+            </ng-select>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.partBef" [items]="partBef" appendTo="body" placeholder="Select"
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()" [searchFn]="customSearchFn">
+            </ng-select>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.process" [items]="processes" appendTo="body" placeholder="Select"
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
+            </ng-select>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.machineType" [items]="machineTypes" appendTo="body" placeholder="Select"
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
+            </ng-select>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.barType" [items]="machineTypes" appendTo="body" placeholder="Select"
+              [clearable]="true" style="width: 100%;" (change)="saveCurrentState()">
+            </ng-select>
+          </td>
+
+          <td>
+            <ng-select [(ngModel)]="item.fac" [items]="facs" appendTo="body" placeholder="Select" [clearable]="true"
+              style="width: 100%;" (change)="saveCurrentState()">
+            </ng-select>
+          </td>
+
+          <td>
+            <input type="text" [(ngModel)]="item.mcNo" placeholder="MC No." (focus)="selectAllText($event)"
+              (change)="saveCurrentState()">
+          </td>
+
+          <td class="col-qty-cell"><input type="number" step="any" [(ngModel)]="item.qty"
+              (focus)="selectAllText($event)" (change)="saveCurrentState()">
+          </td>
+          <td><input type="text" [(ngModel)]="item.time" (focus)="selectAllText($event)" (change)="saveCurrentState()">
+          </td>
+          <td class="col-qty-cell"><input type="number" step="any" [(ngModel)]="item.mcQty"
+              (focus)="selectAllText($event)" (change)="saveCurrentState()">
+          </td>
+          <td><input type="text" [(ngModel)]="item.comment" (focus)="selectAllText($event)"
+              (change)="saveCurrentState()"></td>
+
+          <td style="text-align: center;">
+            <button class="btn-delete" (click)="removeRow(i)">DELETE</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="action-buttons">
+    <div style="display: flex; gap: 1rem;">
+      <button class="btn-add" (click)="addRow()" [disabled]="isLoadingMasterData">
+        {{ isLoadingMasterData ? '...' : 'ADD' }}
+      </button>
+      <button class="btn-delete-all" *ngIf="hasSelectedItems()" (click)="removeSelected()"
+        style="background-color: #ef4444; color: white;">
+        DELETE SELECTED <i class="bi bi-trash"></i>
+      </button>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+      <button class="btn-clear" (click)="clearAll()">
+        CLEAR ALL <i class="bi bi-trash3"></i>
+      </button>
+      <button class="btn-submit" (click)="onSubmit()">Send</button>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,31 @@
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers/forecast.controller');
+const upload = require('../config/multer.config');
+router.get('/forecast/query', controller.getForecast);
+router.get('/forecast/tooling-master', controller.getToolingMaster);
+router.get('/forecast/connection-status', controller.getConnectionStatus);
+router.post('/forecast/submit', controller.submitForecast);
+router.get('/forecast/orders', controller.getOrders);
+router.post('/forecast/orders/insert', controller.insertOrder);
+router.post('/forecast/orders/update', controller.updateOrder);
+router.delete('/forecast/orders/delete/:orderId', controller.deleteOrder);
+router.post('/forecast/import-planning', upload.single('file'), controller.importPlanningExcel);
+router.post('/forecast/tooling-master/import', controller.importToolingMaster);
+router.post('/forecast/save-pc-plan', controller.savePCPlan);
+router.get('/forecast/pc-plan', controller.getPCPlan);
+router.get('/forecast/balance', controller.getForecastBalance);
+router.get('/forecast/incoming-po', controller.getIncomingPO);
+router.get('/forecast/incoming-pr', controller.getIncomingPR);
+router.get('/forecast/stock-on-rack', controller.getStockOnRack);
+router.get('/forecast/tooling-usage', controller.getToolingUsageParameters);
+router.get('/forecast/tooling-usage-audit/:toolingCode', controller.getToolingUsageAudit);
+router.get('/forecast/daily-issue', controller.getDailyIssue);
+router.get('/forecast/stock-summary-daily', controller.getCuttingToolsStockSummary);
+router.get('/forecast/cuttingtools-inventory-daily', controller.getCuttingToolsInventoryDaily);
+router.get('/forecast/autoload-status', controller.getAutoloadStatus);
+router.get('/forecast/daily-issue/status', controller.getAutoloadStatus);
+
+router.post('/forecast/save-balance', controller.saveForecastBalance);
+
+module.exports = router;

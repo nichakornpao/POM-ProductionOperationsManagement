@@ -1,0 +1,18 @@
+<button class="notification-btn" (click)="toggleNotification()">
+  <i class="bi bi-bell"></i>
+  <span class="badge"></span>
+</button>
+<div class="notification-panel" *ngIf="isOpen">
+  <div class="header">
+    <span>New ({{ (notifications$ | async)?.length || 0 }})</span>
+    <button class="close-btn" (click)="toggleNotification()">
+      <i class="bi bi-x-circle"></i>
+    </button>
+  </div>
+  <div class="notification-list">
+    <div *ngFor="let item of notifications$ | async" class="notification-item">
+      <span class="dot"></span>
+      <span class="text">{{ item.Message }}</span>
+    </div>
+  </div>
+</div>

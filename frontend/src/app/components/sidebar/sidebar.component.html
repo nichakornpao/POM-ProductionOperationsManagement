@@ -1,0 +1,239 @@
+<nav class="sidebar">
+  <div class="top">
+
+    <!-- MinebeaMitsumi Logo (Pure CSS/HTML) -->
+    <div class="sidebar-logo-container">
+      <div class="logo-wrapper">
+        <div class="minebea-logo">
+          <span class="brand-text">
+            <span>M</span><span>i</span><span>n</span><span>e</span><span>b</span><span>e</span><span>a</span><span>M</span><span>i</span><span>t</span><span>s</span><span>u</span><span>m</span><span>i</span>
+          </span>
+        </div>
+        <div class="logo-slogan">
+          <span class="text-red italic">Passion</span>
+          <span class="text-blue italic">to</span>
+          <span class="text-blue italic">Create</span>
+          <span class="text-blue italic">Value</span>
+          <span class="text-blue italic">through</span>
+          <span class="text-red italic">Difference</span>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <!-- Purchase Role: Plan List at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'purchase'">
+        <a routerLink="/purchase/PlanList">
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
+        </a>
+      </li>
+      <!-- Cost Role: Dashboard & Master PH at Top -->
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/analyze">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Dashboard</span>
+        </a>
+      </li>
+      <li routerLinkActive="active" *ngIf="role === 'Cost'">
+        <a routerLink="/purchase/master-ph">
+          <i class="bi bi-database"></i>
+          <span class="link-text">Master PH</span>
+        </a>
+      </li>
+
+      <!-- Main Menu (Allowed Items) -->
+      <li routerLinkActive="active" *ngIf="role === 'PC' || role === 'admin'">
+        <a routerLink="/production/PCPlan">
+          <i class="bi bi-clipboard-data"></i>
+          <span class="link-text">Planning</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active" *ngIf="role === 'production' || role === 'admin'">
+        <a routerLink="/production/request">
+          <i class="bi bi-newspaper"></i>
+          <span class="link-text">Request</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/production/PlanList">
+          <i class="bi bi-list-check"></i>
+          <span class="link-text">Plan List</span>
+        </a>
+      </li>
+
+      <!-- Document Return & Issue (EN Only) -->
+      <li routerLinkActive="active" *ngIf="role === 'engineer' || role === 'engineering' || role === 'eng' || role === 'en' || role === 'EN' || role === 'admin'">
+        <a routerLink="/production/document-return-issue">
+          <i class="bi bi-file-earmark-arrow-up"></i>
+          <span class="link-text">Document Return & Issue</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active" *ngIf="role === 'engineer' || role === 'engineering' || role === 'eng' || role === 'en' || role === 'EN' || role === 'admin'">
+        <a routerLink="/production/engineer-history">
+          <i class="bi bi-clock-fill"></i>
+          <span class="link-text">Engineer History</span>
+        </a>
+      </li>
+
+
+
+      <li routerLinkActive="active" *ngIf="role === 'production' || role === 'admin'">
+        <a routerLink="/production/return">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span class="link-text">Return</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/production/request-history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">Request History</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/production/return-history">
+          <i class="bi bi-clock-history"></i>
+          <span class="link-text">Return History</span>
+        </a>
+      </li>
+
+      <li routerLinkActive="active">
+        <a routerLink="/production/historyprint">
+          <i class="bi bi-printer-fill"></i>
+          <span class="link-text">History Print</span>
+        </a>
+      </li>
+
+      <hr class="text-secondary my-3">
+      <li routerLinkActive="active" class="mt-2">
+        <a [routerLink]="(role === 'purchase' || role === 'Cost') ? '/purchase/ForecastDashboard' : '/production/ForecastDashboard'">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span class="link-text">Forecast Dashboard</span>
+        </a>
+      </li>
+      <!-- Restricted Menu (Locked Items for PC) -->
+      <div *ngIf="role === 'PC'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for Production) -->
+      <div *ngIf="role === 'production'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Planning<span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for Engineer) -->
+      <div *ngIf="role === 'engineer'" class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Planning <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+
+      <!-- Restricted Menu (Locked Items for QC, Gague, Cost, View) -->
+      <div *ngIf="role === 'QC' || role === 'Gague' || role === 'Cost' || role === 'View' || role === 'view'"
+        class="mt-4 border-top pt-2">
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-clipboard-data"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Planning <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-newspaper"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Request <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+        <li class="nav-item disabled-item" style="opacity: 0.5; cursor: not-allowed;"
+          (click)="$event.preventDefault(); $event.stopPropagation()">
+          <a>
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span class="link-text d-flex justify-content-between align-items-center w-100">
+              Return <span class="badge bg-secondary ms-2" style="font-size: 0.6em;">LOCK</span>
+            </span>
+          </a>
+        </li>
+      </div>
+    </ul>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-profile-card">
+      <div class="avatar-container">
+        <div class="avatar-circle">
+          {{ Employee_Name ? Employee_Name.charAt(0).toUpperCase() : 'U' }}
+        </div>
+      </div>
+      <div class="user-info">
+        <span class="user-name" title="{{ Employee_Name }}">{{ Employee_Name }}</span>
+        <span class="user-role">{{ role || 'User' }}</span>
+      </div>
+    </div>
+
+    <button (click)="logout()" class="btn-logout-premium">
+      <div class="icon-wrapper">
+        <i class="bi bi-box-arrow-right"></i>
+      </div>
+      <span class="logout-text">Sign Out</span>
+    </button>
+  </div>
+</nav>

@@ -1,0 +1,242 @@
+<div class="login-page-container">
+
+  <!-- Flow Field Particle Canvas Background -->
+  <canvas #particleCanvas class="particle-canvas"></canvas>
+
+  <!-- SVG Header -->
+  <div class="svg-header-container">
+    <svg viewBox="0 0 800 160" overflow="visible">
+
+      <defs>
+        <!-- Refined silver-indigo celestial gradient — subtle, not neon -->
+        <linearGradient id="brandFill" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#eaf3ff" /> <!-- icy silver-white top -->
+          <stop offset="25%" stop-color="#b8d0f0" /> <!-- soft steel blue -->
+          <stop offset="60%" stop-color="#7090c8" /> <!-- deep indigo mid -->
+          <stop offset="100%" stop-color="#a8c4e8" /> <!-- moonlit blue base -->
+        </linearGradient>
+
+        <!-- Refined glow: subtle depth, NOT aggressive neon.
+             Dark navy drop-shadow provides contrast against starfield. -->
+        <filter id="brandGlow" x="-12%" y="-55%" width="124%" height="210%">
+          <!-- dark navy hard shadow for pop/contrast against starfield -->
+          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#010918" flood-opacity="0.80" />
+          <!-- tight soft white inner glow -->
+          <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#c8e4ff" flood-opacity="0.40" />
+          <!-- wider indigo celestial halo -->
+          <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#2a55a8" flood-opacity="0.28" />
+        </filter>
+
+        <!-- Clip path — Playfair Display, matching brand-text exactly -->
+        <clipPath id="brandTextClip">
+          <text x="50%" y="45%" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="82px"
+            font-weight="900" font-style="italic">
+            MinebeaMitsumi
+          </text>
+        </clipPath>
+
+        <!-- Shimmer gradient: narrow diagonal white glint -->
+        <linearGradient id="shimmerGradCSS" x1="0%" y1="0%" x2="100%" y2="40%">
+          <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="44%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="50%" stop-color="rgba(255,255,255,0.45)" />
+          <stop offset="56%" stop-color="rgba(255,255,255,0)" />
+          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+        </linearGradient>
+      </defs>
+
+      <!-- Brand Name — Playfair Display heavy serif italic -->
+      <text x="50%" y="45%" text-anchor="middle" class="brand-text">
+        <tspan *ngFor="let char of brandChars" class="hover-char">{{char}}</tspan>
+      </text>
+
+      <!-- Shimmer sweep (clipped to letterforms, intermittent) -->
+      <rect class="brand-shimmer" x="-100%" y="0" width="40%" height="100%" clip-path="url(#brandTextClip)" />
+
+      <!-- Subtitle -->
+      <text x="50%" y="75%" text-anchor="middle" class="sub-text">
+        <tspan *ngFor="let char of subtitleChars" class="hover-char-sub">{{char}}</tspan>
+      </text>
+    </svg>
+  </div>
+
+  <!-- Login Card -->
+  <div class="login-card-entrance">
+
+    <div style="margin-bottom: 2rem; text-align: center;">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">Welcome Back</h2>
+      <p style="color: #64748b; font-size: 0.95rem;">Please sign in to continue</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+      <!-- Username -->
+      <div class="input-group">
+        <label for="username">Username</label>
+        <div style="position: relative;">
+          <span class="icon-wrapper">
+            <i class="bi bi-person"></i>
+          </span>
+          <input type="text" id="username" name="username" [(ngModel)]="Username" required autocomplete="username"
+            placeholder="Enter your ID">
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group password-group">
+        <label for="password">Password</label>
+        <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+          <div style="position: relative; width: 100%;">
+            <span class="icon-wrapper">
+              <i class="bi bi-lock"></i>
+            </span>
+            <input [type]="showPassword ? 'text' : 'password'" id="password" name="password" [(ngModel)]="Password"
+              required autocomplete="current-password" placeholder="Enter password" class="password-input">
+          </div>
+
+          <button type="button" (click)="togglePasswordVisibility()" class="toggle-password-btn-outside"
+            style="color: #94a3b8; background: none; border: none; cursor: pointer; font-size: 1.25rem; transition: color 0.2s;"
+            onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='#94a3b8'">
+            <i class="bi" [ngClass]="showPassword ? 'bi-eye' : 'bi-eye-slash'"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn">
+        SIGN IN
+        <i class="bi bi-arrow-right"></i>
+      </button>
+
+      <p *ngIf="errorMessage"
+        style="color: #ef4444; font-size: 0.875rem; text-align: center; margin-top: 1rem; background-color: #fef2f2; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #fee2e2;">
+        {{ errorMessage }}
+      </p>
+    </form>
+  </div>
+
+  <!-- Decoration / Footer -->
+  <div class="footer-text">
+    &copy; MinebeaMitsumi - Smart Tooling System
+  </div>
+</div>
+
+<!-- Force-Login Confirmation Modal -->
+<div *ngIf="showForceModal"
+  style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Kanit',sans-serif;background:radial-gradient(ellipse at center,rgba(30,58,138,0.95) 0%,rgba(0,4,40,0.97) 50%,rgba(0,0,0,0.98) 100%);backdrop-filter:blur(12px);">
+
+  <!-- Glow orbs for atmosphere -->
+  <div
+    style="position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.12) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+  </div>
+  <div
+    style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(245,158,11,0.08) 0%,transparent 70%);top:30%;left:40%;pointer-events:none;">
+  </div>
+
+  <!-- Glass Card -->
+  <div
+    style="position:relative;background:#ffffff;border-radius:1.75rem;padding:2.75rem 2.25rem 2.25rem;max-width:440px;width:92%;box-shadow:0 24px 60px rgba(0,0,0,0.45),0 0 0 1px rgba(0,0,0,0.06);text-align:center;animation:forceModalIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;">
+
+
+
+    <!-- Warning Icon with layered glow -->
+    <div style="position:relative;width:80px;height:80px;margin:0 auto 1.6rem;">
+      <!-- Outer pulse ring -->
+      <div
+        style="position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(245,158,11,0.3);animation:iconRing 2.2s ease-in-out infinite;">
+      </div>
+      <!-- Mid ring -->
+      <div
+        style="position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(245,158,11,0.5);animation:iconRing 2.2s ease-in-out infinite 0.4s;">
+      </div>
+      <!-- Icon bg -->
+      <div
+        style="width:80px;height:80px;border-radius:50%;background:linear-gradient(145deg,rgba(245,158,11,0.2),rgba(217,119,6,0.1));border:1.5px solid rgba(245,158,11,0.45);display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(245,158,11,0.25),inset 0 1px 0 rgba(255,255,255,0.1);">
+        <i class="bi bi-shield-exclamation"
+          style="font-size:2.1rem;color:#f59e0b;filter:drop-shadow(0 0 10px rgba(245,158,11,0.7));"></i>
+      </div>
+    </div>
+
+    <!-- Badge -->
+    <div
+      style="display:inline-block;background:#fef2f2;border:1px solid #fecaca;border-radius:2rem;padding:0.2rem 0.875rem;margin-bottom:0.9rem;">
+      <span
+        style="color:#dc2626;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Session
+        Conflict</span>
+    </div>
+
+    <!-- Title -->
+    <h3 style="font-size:1.5rem;font-weight:800;color:#0f172a;margin:0 0 0.6rem;letter-spacing:0.01em;line-height:1.3;">
+      บัญชีนี้ถูกใช้งานอยู่ครับ
+    </h3>
+
+    <!-- Body -->
+    <p style="color:#475569;font-size:0.93rem;line-height:1.8;margin:0 0 2rem;">
+      มีการเข้าสู่ระบบด้วยบัญชีนี้อยู่ขณะนี้<br>
+      ต้องการเข้าสู่ระบบและ<strong style="color:#dc2626;font-weight:700;">ตัดการเชื่อมต่อผู้ใช้เดิม</strong>หรือไม่ครับ?
+    </p>
+
+    <!-- Divider -->
+    <div style="height:1px;background:#f1f5f9;margin-bottom:1.75rem;"></div>
+
+    <!-- Buttons -->
+    <div style="display:flex;gap:0.875rem;">
+      <button (click)="onCancelForceLogin()"
+        style="flex:1;padding:0.85rem;border-radius:1rem;border:1.5px solid #e2e8f0;background:#f8fafc;color:#64748b;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:'Kanit',sans-serif;transition:all 0.2s;letter-spacing:0.02em;"
+        onmouseover="this.style.background='#f1f5f9';this.style.borderColor='#cbd5e1';this.style.color='#475569'"
+        onmouseout="this.style.background='#f8fafc';this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+        ยกเลิก
+      </button>
+
+      <button (click)="onConfirmForceLogin()" [disabled]="isForceLogging"
+        style="flex:1.4;padding:0.85rem;border-radius:1rem;border:none;background:linear-gradient(135deg,#ef4444,#991b1b);color:#fff;font-weight:800;font-size:0.9rem;cursor:pointer;font-family:'Kanit',sans-serif;transition:all 0.2s;letter-spacing:0.02em;box-shadow:0 4px 20px rgba(239,68,68,0.4),inset 0 1px 0 rgba(255,255,255,0.15);"
+        onmouseover="this.style.background='linear-gradient(135deg,#f87171,#dc2626)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 28px rgba(239,68,68,0.55),inset 0 1px 0 rgba(255,255,255,0.15)'"
+        onmouseout="this.style.background='linear-gradient(135deg,#ef4444,#991b1b)';this.style.transform='translateY(0)';this.style.boxShadow='0 4px 20px rgba(239,68,68,0.4),inset 0 1px 0 rgba(255,255,255,0.15)'">
+        <span *ngIf="!isForceLogging">ยืนยัน เข้าสู่ระบบ</span>
+        <span *ngIf="isForceLogging" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+          <span
+            style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:modalSpin 0.7s linear infinite;display:inline-block;"></span>
+          กำลังเข้าสู่ระบบ...
+        </span>
+      </button>
+    </div>
+
+    <!-- Bottom caption -->
+    <p style="color:#64748b;font-size:0.75rem;margin:1.1rem 0 0;letter-spacing:0.02em;">
+      การเข้าสู่ระบบจะตัดเซสชันก่อนหน้าทันที
+    </p>
+  </div>
+</div>
+
+<style>
+  @keyframes forceModalIn {
+    from {
+      opacity: 0;
+      transform: translateY(28px) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes iconRing {
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.4;
+    }
+
+    50% {
+      transform: scale(1.2);
+      opacity: 1;
+    }
+  }
+
+  @keyframes modalSpin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

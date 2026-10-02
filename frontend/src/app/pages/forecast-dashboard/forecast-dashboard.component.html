@@ -1,0 +1,1649 @@
+<div class="forecast-dashboard-container">
+  <div *ngIf="!isDetailViewOpen" class="fade-in">
+  <!-- Header -->
+  <div class="dashboard-header d-flex align-items-center mb-3">
+    <h2 class="dashboard-title mb-0">
+      <i class="bi bi-graph-up-arrow text-primary"></i>
+      Forecast & Order Plan
+    </h2>
+  </div>
+
+  <!-- Connection Failure Alert (Ensuring isolation warning) -->
+  <div *ngIf="dbConnected === false" class="alert alert-danger d-flex align-items-start premium-card shadow-sm mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-3 mt-1"></i>
+    <div>
+      <h6 class="alert-heading fw-bold mb-1">การเชื่อมต่อเซิร์ฟเวอร์สำรอง PBGM8G ขัดข้อง</h6>
+      <p class="mb-0">เกิดข้อผิดพลาด: <code class="text-danger fw-semibold">{{ dbError }}</code>. ระบบไม่สามารถเข้าถึงฐานข้อมูล Forecast ได้ในขณะนี้ อย่างไรก็ตาม <strong>โมดูลหลักอื่นๆ (เช่น Planning, Request ฯลฯ) ที่ทำงานบนเซิร์ฟเวอร์หลักยังสามารถใช้งานได้ตามปกติและไม่ได้รับผลกระทบใดๆ</strong></p>
+    </div>
+  </div>
+
+  <!-- Nav Tabs -->
+  <ul class="nav nav-tabs custom-nav-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'import'" (click)="activeTab = 'import'" type="button">
+        <i class="bi bi-file-earmark-excel me-2"></i>Import Planning & Master
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" [class.active]="activeTab === 'forecast'" (click)="activeTab = 'forecast'" type="button">
+        <i class="bi bi-calendar-range me-2"></i>Forecast & Planning (PC)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation" *ngIf="isPurchaseOrAdmin">
+      <button class="nav-link" [class.active]="activeTab === 'purchase'" (click)="activeTab = 'purchase'" type="button">
+        <i class="bi bi-cart4 me-2"></i>Purchase Forecast
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content Areas -->
+  <div class="tab-content">
+
+    <!-- Tab 1: Forecast & Planning -->
+    <div *ngIf="activeTab === 'forecast'" class="tab-pane fade show active">
+      <!-- Filter Card -->
+      <div class="card premium-card hybrid-glow-card mb-4" style="z-index: 10;">
+        <div class="card-body">
+          <div class="row align-items-end g-3">
+            <!-- Month Dropdown -->
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="monthDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">MONTH</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="monthDropdownOpen" type="button" (click)="toggleDropdown('month', $event)">
+                  <span class="selected-text">{{ selectedMonth }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="monthDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let month of months" (click)="selectedMonth = month; monthDropdownOpen = false" [class.active]="selectedMonth === month">{{ month }}</a>
+                </div>
+              </div>
+            </div>
+            <!-- Year Dropdown -->
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="yearDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">YEAR</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="yearDropdownOpen" type="button" (click)="toggleDropdown('year', $event)">
+                  <span class="selected-text">{{ selectedYear }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="yearDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let year of years" (click)="selectedYear = year; yearDropdownOpen = false" [class.active]="selectedYear === year">{{ year }}</a>
+                </div>
+              </div>
+            </div>
+            <!-- Revision Dropdown -->
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="revisionDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">REVISION</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="revisionDropdownOpen" type="button" (click)="toggleDropdown('revision', $event)">
+                  <span class="selected-text">{{ selectedRevision }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="revisionDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let rev of revisions" (click)="selectedRevision = rev; revisionDropdownOpen = false" [class.active]="selectedRevision === rev">{{ rev }}</a>
+                </div>
+              </div>
+            </div>
+              <!-- Missing Item Toggle & Action Buttons -->
+              <div class="col-md-12 col-lg-6 d-flex flex-wrap gap-3 justify-content-lg-end align-items-center mt-4 mt-lg-0">
+
+                  <div class="d-flex gap-2">
+                    <button class="btn-niat" (click)="saveForecastToDB()">
+                      <i class="bi bi-save"></i> SAVE
+                    </button>
+                    <button class="btn-niat" (click)="showForecast()">
+                      <i class="bi bi-eye"></i> VIEW
+                    </button>
+                    <button class="btn-niat" (click)="exportToExcel()">
+                      <i class="bi bi-file-earmark-excel"></i> EXPORT
+                    </button>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Grid -->
+      <div class="grid-wrapper p-3 bg-white rounded-4 shadow-sm" style="border: 1px solid #eef2f6;">
+        <ag-grid-angular
+          style="width: 100%; height: 500px;"
+          class="ag-theme-quartz"
+          [rowData]="forecastRowData"
+          [columnDefs]="forecastColDefs"
+          [defaultColDef]="defaultColDef"
+          [columnTypes]="columnTypes"
+          [rowHeight]="55"
+          [headerHeight]="50"
+          [groupHeaderHeight]="45"
+          [rowClassRules]="forecastRowClassRules"
+          [pagination]="true"
+          [paginationPageSize]="50"
+          [suppressPaginationPanel]="true"
+          [suppressRowClickSelection]="true"
+          [singleClickEdit]="true"
+          (paginationChanged)="onForecastPaginationChanged($event)"
+          (cellClicked)="onForecastCellClicked($event)"
+          (filterChanged)="onForecastFilterChanged($event)"
+          (gridReady)="onForecastGridReady($event)">
+        </ag-grid-angular>
+      </div>
+
+      <!-- Custom Minimalist Pagination (Forecast) -->
+      <div class="custom-pagination-container d-flex align-items-center justify-content-between mt-3 px-2">
+        <div class="pagination-info d-flex align-items-center text-muted">
+          <span class="small fw-medium">
+            <span class="text-dark">{{ forecastTotalRows > 0 ? (forecastCurrentPage - 1) * forecastPageSize + 1 : 0 }}</span> - <span class="text-dark">{{ (forecastCurrentPage * forecastPageSize) > forecastTotalRows ? forecastTotalRows : (forecastCurrentPage * forecastPageSize) }}</span> of <span class="text-dark fw-bold">{{ forecastTotalRows }}</span> items
+          </span>
+        </div>
+        <div class="pagination-controls d-flex align-items-center gap-1">
+          <button class="btn btn-sm page-nav-btn rounded-3" (click)="goToPrevForecastPage()" [disabled]="forecastCurrentPage === 1">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <ng-container *ngFor="let page of getForecastPaginationPages()">
+            <button class="btn btn-sm page-num-btn rounded-3"
+                    [class.active]="page === forecastCurrentPage"
+                    [class.dots]="page === '...'"
+                    (click)="page !== '...' ? goToForecastPage(page) : null"
+                    [disabled]="page === '...'">
+              {{ page }}
+            </button>
+          </ng-container>
+
+          <button class="btn btn-sm page-nav-btn rounded-3" (click)="goToNextForecastPage()" [disabled]="forecastCurrentPage === forecastTotalPages || forecastTotalPages === 0">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Forecast Detail Drawer -->
+      <div class="detail-drawer-backdrop" *ngIf="isForecastDrawerOpen" (click)="closeForecastDrawer()"></div>
+
+
+
+    </div>
+
+    <!-- Tab 2: Edit Orders (Temporarily Deactivated)
+    <div *ngIf="activeTab === 'edit'" class="tab-pane fade show active">
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-secondary btn-premium" (click)="loadOrders()" [disabled]="dbConnected === false">
+          <i class="bi bi-arrow-clockwise"></i> Load Orders
+        </button>
+        <button class="btn btn-success btn-premium" (click)="insertOrder()" [disabled]="dbConnected === false">
+          <i class="bi bi-plus-lg"></i> Insert
+        </button>
+        <button class="btn btn-warning text-dark btn-premium" (click)="editSelectedOrder()" [disabled]="dbConnected === false">
+          <i class="bi bi-pencil"></i> Edit Selected
+        </button>
+        <button class="btn btn-danger btn-premium" (click)="deleteSelectedOrder()" [disabled]="dbConnected === false">
+          <i class="bi bi-trash"></i> Delete Selected
+        </button>
+      </div>
+
+      <div class="grid-wrapper">
+        <ag-grid-angular
+          style="width: 100%; height: 400px;"
+          class="ag-theme-alpine"
+          [rowData]="ordersRowData"
+          [columnDefs]="ordersColDefs"
+          [defaultColDef]="defaultColDef"
+          [columnTypes]="columnTypes"
+          rowSelection="single"
+          (filterChanged)="onOrdersFilterChanged($event)"
+          (gridReady)="onOrdersGridReady($event)">
+        </ag-grid-angular>
+      </div>
+    </div>
+    -->
+
+    <!-- Tab 2: Purchase Forecast (NEW) -->
+    <div *ngIf="activeTab === 'purchase'" class="tab-pane fade show active">
+      <!-- Filter Card for Purchase (Reuse filters but distinct style) -->
+      <div class="card premium-card hybrid-glow-card mb-4" style="z-index: 10;">
+        <div class="card-body">
+          <div class="row align-items-start g-3">
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="monthDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">MONTH</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="monthDropdownOpen" type="button" (click)="toggleDropdown('month', $event)">
+                  <span class="selected-text">{{ selectedMonth }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="monthDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let month of months" (click)="selectedMonth = month; monthDropdownOpen = false" [class.active]="selectedMonth === month">{{ month }}</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="yearDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">YEAR</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="yearDropdownOpen" type="button" (click)="toggleDropdown('year', $event)">
+                  <span class="selected-text">{{ selectedYear }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="yearDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let year of years" (click)="selectedYear = year; yearDropdownOpen = false" [class.active]="selectedYear === year">{{ year }}</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 col-lg-2 position-relative" [style.z-index]="revisionDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">REVISION</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="revisionDropdownOpen" type="button" (click)="toggleDropdown('revision', $event)">
+                  <span class="selected-text">{{ selectedRevision }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100" [class.show]="revisionDropdownOpen" (click)="$event.stopPropagation()">
+                  <a class="custom-dropdown-item" *ngFor="let rev of revisions" (click)="selectedRevision = rev; revisionDropdownOpen = false" [class.active]="selectedRevision === rev">{{ rev }}</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-lg-3 position-relative" [style.z-index]="vendorDropdownOpen ? 1050 : 1">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.8rem; letter-spacing: 0.5px;">VENDOR</label>
+              <div class="dropdown w-100">
+                <button class="btn custom-dropdown-btn w-100" [class.is-open]="vendorDropdownOpen" type="button" (click)="toggleDropdown('vendor', $event)">
+                  <span class="selected-text text-truncate d-inline-block" style="max-width: 85%;">{{ selectedVendor }}</span>
+                  <svg class="custom-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="custom-dropdown-menu w-100 shadow-lg border-0 rounded-3" [class.show]="vendorDropdownOpen" (click)="$event.stopPropagation()" style="max-height: 300px; overflow-y: auto;">
+                  <a class="custom-dropdown-item py-2" (click)="onVendorSelected('All Vendors')" [class.active]="selectedVendor === 'All Vendors'">
+                    <i class="bi bi-asterisk me-2 text-muted"></i>All Vendors
+                  </a>
+                  <div class="dropdown-divider my-1"></div>
+                  <a class="custom-dropdown-item py-2 text-muted fst-italic" *ngIf="availableVendors.length === 0" style="pointer-events: none; text-align: center;">
+                    <small style="font-size: 0.75rem;">(Click CALCULATE to load vendors)</small>
+                  </a>
+                  <a class="custom-dropdown-item py-2" *ngFor="let vendor of availableVendors" (click)="onVendorSelected(vendor)" [class.active]="selectedVendor === vendor">
+                    <i class="bi bi-shop me-2 text-secondary"></i>{{ vendor }}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 col-lg-3 d-flex flex-wrap gap-2 justify-content-lg-end mt-4 mt-lg-0 align-items-center pt-lg-4">
+                <button class="animated-button shadow-sm" (click)="calculatePurchaseData()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="arr-2" viewBox="0 0 24 24">
+                    <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                  </svg>
+                  <span class="text" style="letter-spacing: 2px; white-space: nowrap;">CALCULATE</span>
+                  <span class="circle"></span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="arr-1" viewBox="0 0 24 24">
+                    <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+                  </svg>
+                </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+        <div class="d-flex align-items-center">
+          <!-- Module Views Tabs -->
+          <div class="nav nav-pills p-1 rounded-pill border shadow-sm d-inline-flex modern-filter-wrapper">
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'overview'"
+                      (click)="setPurchaseViewMode('overview')">
+                <i class="bi bi-calendar3 me-1"></i> Monthly
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'daily'"
+                      (click)="setPurchaseViewMode('daily')">
+                <i class="bi bi-calendar2-day me-1"></i> Daily
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'summary-orders'"
+                      (click)="setPurchaseViewMode('summary-orders')">
+                <i class="bi bi-card-checklist me-1"></i> Summary Orders
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'parameters'"
+                      (click)="setPurchaseViewMode('parameters')">
+                <i class="bi bi-gear me-1"></i> Parameters
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'orders-date'"
+                      (click)="setPurchaseViewMode('orders-date')">
+                <i class="bi bi-calendar-check me-1"></i> Orders Date
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'vendor'"
+                      (click)="setPurchaseViewMode('vendor')">
+                <i class="bi bi-shop me-1"></i> Vendor
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'on-hand'"
+                      (click)="setPurchaseViewMode('on-hand')">
+                <i class="bi bi-box-seam me-1"></i> On-hand
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'inventory'"
+                      (click)="setPurchaseViewMode('inventory')">
+                <i class="bi bi-boxes me-1"></i> Inventory
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'usage'"
+                      (click)="setPurchaseViewMode('usage')">
+                <i class="bi bi-graph-down me-1"></i> Forecast Plan
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'po'"
+                      (click)="setPurchaseViewMode('po')">
+                <i class="bi bi-truck me-1"></i> PO
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'pr'"
+                      (click)="setPurchaseViewMode('pr')">
+                <i class="bi bi-cart me-1"></i> PR
+              </button>
+            </div>
+            <div class="nav-item">
+              <button class="nav-link rounded-pill py-2 px-3 border-0 modern-filter-btn"
+                      [class.active]="purchaseViewMode === 'price'"
+                      (click)="setPurchaseViewMode('price')">
+                <i class="bi bi-tags-fill me-1"></i> Price
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <!-- Live Autoload Status Badge (Shown on Daily & Inventory tabs) -->
+          <div *ngIf="purchaseViewMode === 'daily' || purchaseViewMode === 'inventory'"
+               class="live-autoload-badge d-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-white border shadow-sm fade-in"
+               [title]="'DB Batch: ' + (lastDbLoadedAt || 'Checking...') + ' | Click to sync immediately'"
+               (click)="manualSyncAutoload()"
+               style="cursor: pointer; user-select: none; transition: all 0.2s ease;">
+            <span class="live-pulse-dot" [class.syncing]="isSyncingIssue"></span>
+            <div class="d-flex flex-column text-start" style="line-height: 1.15;">
+              <span class="fw-bold text-dark d-flex align-items-center" style="font-size: 0.76rem;">
+                Live Autoload
+                <i *ngIf="isSyncingIssue" class="bi bi-arrow-repeat spin-icon text-primary ms-1"></i>
+              </span>
+              <span class="text-muted" style="font-size: 0.65rem;">
+                DB: {{ lastDbLoadedAt ? lastDbLoadedAt.substring(5, 16) : 'Checking...' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Daily Forecast Month Dropdown -->
+          <div *ngIf="purchaseViewMode === 'daily'" class="d-flex align-items-center fade-in bg-white rounded-pill shadow-sm px-3 py-1 border border-light-subtle">
+            <i class="bi bi-calendar-event text-primary me-2"></i>
+            <span class="fw-bold text-secondary small me-2 text-nowrap">Forecast:</span>
+            <select class="form-select form-select-sm border-0 fw-bold text-dark shadow-none bg-transparent" style="width: 125px; cursor: pointer; outline: none;" [(ngModel)]="selectedDailyForecastMonthOffset" (ngModelChange)="onDailyForecastMonthChange()">
+              <option *ngFor="let m of targetMonthOptions" [ngValue]="m.offset">{{ m.label }}</option>
+            </select>
+          </div>
+
+          <!-- Target Month Dropdown -->
+          <div *ngIf="purchaseViewMode === 'orders-date' || purchaseViewMode === 'vendor' || purchaseViewMode === 'price'" class="d-flex align-items-center fade-in bg-white rounded-pill shadow-sm px-3 py-1 border border-light-subtle">
+            <i class="bi bi-calendar-event text-primary me-2"></i>
+            <span class="fw-bold text-secondary small me-2 text-nowrap">Plan for:</span>
+            <select class="form-select form-select-sm border-0 fw-bold text-dark shadow-none bg-transparent" style="width: 110px; cursor: pointer; outline: none;" [(ngModel)]="targetOrderMonthOffset" (ngModelChange)="onTargetOrderMonthChange()">
+              <option *ngFor="let m of targetMonthOptions" [ngValue]="m.offset">{{ m.label }}</option>
+            </select>
+          </div>
+
+          <!-- Action Buttons -->
+          <button class="send-animated-button fade-in" type="button" *ngIf="purchaseViewMode === 'orders-date'" (click)="sendToVendor()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="arr-2" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+            </svg>
+            <span class="text">SEND ORDER</span>
+            <span class="circle"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="arr-1" viewBox="0 0 24 24">
+              <path d="M16.1716 10.9999L10.8076 5.63589L12.2218 4.22168L20 11.9999L12.2218 19.778L10.8076 18.3638L16.1716 12.9999H4V10.9999H16.1716Z"></path>
+            </svg>
+          </button>
+
+          <button class="export-button fade-in" type="button" *ngIf="purchaseViewMode === 'vendor'" (click)="exportVendorExcel()">
+            <span class="button__text">Export Excel</span>
+            <span class="button__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" id="bdd05811-e15d-428c-bb53-8661459f9307" data-name="Layer 2" class="svg">
+                <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"></path>
+                <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"></path>
+                <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"></path>
+              </svg>
+            </span>
+          </button>
+
+          <button class="btn btn-primary btn-sm rounded-pill fw-bold fade-in shadow-sm px-3 ms-2 d-flex align-items-center" type="button" *ngIf="purchaseViewMode === 'vendor'" (click)="openAddItemModal()" style="height: 38px;">
+            <i class="bi bi-plus-lg me-2"></i> Add Item
+          </button>
+
+          <!-- Bulk Update Target Month (In Parameters & Summary Orders Tabs) -->
+          <div *ngIf="purchaseViewMode === 'parameters' || purchaseViewMode === 'summary-orders'" class="d-inline-flex align-items-center fade-in me-3">
+            <span class="small fw-bold text-secondary-emphasis me-2">Month:</span>
+            <div class="animated-menu">
+              <div class="item">
+                <div class="link" style="min-width: 120px;">
+                  <span>{{ getDisplaySelectedRateMonth() }}</span>
+                  <svg viewBox="0 0 360 360" xml:space="preserve" class="caret-icon">
+                    <g>
+                      <path d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393 c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393 s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"></path>
+                    </g>
+                  </svg>
+                </div>
+                <div class="submenu">
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('default')">{{ getMonthNameForContext('m0') }}</a></div>
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('M1')">{{ getMonthNameForContext('m1') }}</a></div>
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('M2')">{{ getMonthNameForContext('m2') }}</a></div>
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('M3')">{{ getMonthNameForContext('m3') }}</a></div>
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('M4')">{{ getMonthNameForContext('m4') }}</a></div>
+                  <div class="submenu-item"><a class="submenu-link" (click)="setRateMonth('M5')">{{ getMonthNameForContext('m5') }}</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Update Normal Rate (In Summary Orders Tab) -->
+          <div *ngIf="purchaseViewMode === 'summary-orders'" class="d-inline-flex align-items-center fade-in" style="margin-right: 120px;">
+            <span class="small fw-bold text-primary-emphasis me-2">Normal:</span>
+            <div class="animated-menu">
+              <div class="item">
+                <div class="link">
+                  <span><i class="bi bi-pencil-square me-1"></i> {{ currentBulkRates[selectedRateMonth] === '%' ? '%' : currentBulkRates[selectedRateMonth] + '%' }}</span>
+                  <svg viewBox="0 0 360 360" xml:space="preserve" class="caret-icon">
+                    <g>
+                      <path d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393 c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393 s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"></path>
+                    </g>
+                  </svg>
+                </div>
+                <div class="submenu">
+                  <div class="submenu-item" *ngFor="let pct of bufferOptions">
+                    <a class="submenu-link" (click)="onBulkNormalRateChange(pct)">{{pct}}%</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+          <div class="d-inline-flex align-items-center fade-in ms-2"
+               *ngIf="purchaseViewMode === 'overview' || purchaseViewMode === 'on-hand' || purchaseViewMode === 'inventory'">
+
+            <input type="checkbox" class="d-none filter-toggle-input" id="shortage-filter-toggle"
+                   [checked]="currentPurchaseFilter === 'need_order'"
+                   (change)="setPurchaseFilter($any($event.target).checked ? 'need_order' : 'all')" />
+
+            <label for="shortage-filter-toggle" class="filter-toggle-container shadow-sm border mb-0">
+              <div class="icon-wrapper">
+                <i class="bi bi-funnel icon-all"></i>
+                <i class="bi bi-funnel-fill icon-shortage"></i>
+              </div>
+              <div class="action text-nowrap fw-bold" style="font-size: 0.85rem; letter-spacing: 0.3px;">
+                <span class="option-1">Show All Items</span>
+                <span class="option-2 text-danger">Shortage Only</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        /* BULLETPROOF AG GRID CHECKBOX OVERRIDE */
+        /* BULLETPROOF AG GRID CHECKBOX OVERRIDE */
+        .ag-theme-quartz.premium-saas-grid {
+          --ag-selected-row-background-color: #eff6ff !important;
+        }
+        .ag-theme-quartz.premium-saas-grid .ag-row {
+          transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .ag-theme-quartz.premium-saas-grid input[type="checkbox"],
+        .ag-theme-quartz.premium-saas-grid .ag-input-field-input {
+          opacity: 0 !important;
+          appearance: none !important;
+          -webkit-appearance: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          position: absolute !important;
+          z-index: -9999 !important;
+        }
+        .ag-theme-quartz.premium-saas-grid .ag-checkbox-input-wrapper::after,
+        .ag-theme-quartz.premium-saas-grid .ag-checkbox-input-wrapper::before {
+          display: none !important;
+          content: none !important;
+          background-image: none !important;
+        }
+        .ag-theme-quartz.premium-saas-grid .ag-checkbox-input-wrapper {
+          width: 20px !important;
+          height: 20px !important;
+          border: 2px solid #cbd5e1 !important;
+          border-radius: 6px !important;
+          background-color: white !important;
+          transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          position: relative !important;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+          overflow: visible !important;
+        }
+        .ag-theme-quartz.premium-saas-grid .ag-checkbox-input-wrapper.ag-checked {
+          background-color: #0d6efd !important;
+          border-color: #0d6efd !important;
+          transform: scale(1.15) !important;
+          box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3) !important;
+        }
+        .ag-theme-quartz.premium-saas-grid .ag-checkbox-input-wrapper.ag-checked::after {
+          display: block !important;
+          content: '' !important;
+          position: absolute !important;
+          width: 5px !important;
+          height: 10px !important;
+          border: solid white !important;
+          border-width: 0 2.5px 2.5px 0 !important;
+          transform: rotate(45deg) !important;
+          margin-top: -2px !important;
+          left: 6px !important;
+          top: 2px !important;
+        }
+      </style>
+      <div class="grid-wrapper p-3 bg-white rounded-4 shadow-sm" style="border: 1px solid #eef2f6;">
+        <ag-grid-angular
+          style="width: 100%; height: 500px;"
+          class="ag-theme-quartz premium-saas-grid"
+          [rowData]="displayedPurchaseRowData"
+          [getRowId]="getRowId"
+          [columnDefs]="purchaseColDefs"
+          [defaultColDef]="defaultColDef"
+          [columnTypes]="columnTypes"
+          [rowHeight]="55"
+          [headerHeight]="50"
+          [groupHeaderHeight]="45"
+          [rowClassRules]="purchaseRowClassRules"
+          [isExternalFilterPresent]="isExternalFilterPresent"
+          [doesExternalFilterPass]="doesExternalFilterPass"
+          [pagination]="true"
+          [paginationPageSize]="50"
+          [suppressPaginationPanel]="true"
+          [tooltipShowDelay]="0"
+          [rowSelection]="'multiple'"
+          [suppressRowClickSelection]="true"
+          [singleClickEdit]="true"
+          (paginationChanged)="onPaginationChanged($event)"
+          (gridSizeChanged)="onPurchaseGridSizeChanged($event)"
+          (gridReady)="onPurchaseGridReady($event)"
+          (cellValueChanged)="onPurchaseCellValueChanged($event)"
+          (cellClicked)="onPurchaseCellClicked($event)"
+          (selectionChanged)="onPurchaseSelectionChanged($event)"
+          (filterChanged)="onPurchaseFilterChanged($event)"
+          (rowDataUpdated)="recalculateTotals()">
+        </ag-grid-angular>
+      </div>
+
+      <!-- Custom Minimalist Pagination -->
+      <div class="custom-pagination-container d-flex align-items-center justify-content-between mt-3 px-2">
+        <div class="pagination-info d-flex align-items-center text-muted">
+          <span class="small fw-medium">
+            <span class="text-dark">{{ totalRows > 0 ? (currentPage - 1) * pageSize + 1 : 0 }}</span> - <span class="text-dark">{{ (currentPage * pageSize) > totalRows ? totalRows : (currentPage * pageSize) }}</span> of <span class="text-dark fw-bold">{{ totalRows }}</span> items
+          </span>
+        </div>
+        <div class="pagination-controls d-flex align-items-center gap-1">
+          <button class="btn btn-sm page-nav-btn rounded-3" (click)="goToPrevPage()" [disabled]="currentPage === 1">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
+          <ng-container *ngFor="let page of getPaginationPages()">
+            <button class="btn btn-sm page-num-btn rounded-3"
+                    [class.active]="page === currentPage"
+                    [class.dots]="page === '...'"
+                    (click)="page !== '...' ? goToPage(page) : null"
+                    [disabled]="page === '...'">
+              {{ page }}
+            </button>
+          </ng-container>
+
+          <button class="btn btn-sm page-nav-btn rounded-3" (click)="goToNextPage()" [disabled]="currentPage === totalPages || totalPages === 0">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Premium Detail Drawer for Purchase Forecast -->
+      <div class="detail-drawer-backdrop" *ngIf="isDetailViewOpen" (click)="closeDetailView()"></div>
+      <div class="detail-drawer shadow-lg premium-drawer" [class.open]="isDetailViewOpen" *ngIf="selectedRowData">
+
+        <!-- Drawer Header -->
+        <div class="drawer-header p-4 pb-4 border-0 position-relative">
+          <div class="d-flex justify-content-between align-items-start position-relative" style="z-index: 1;">
+            <h5 class="fw-bold mb-0 d-flex align-items-center text-dark">
+              <i class="bi bi-info-circle-fill text-primary me-2"></i> Item Details
+            </h5>
+            <button type="button" class="btn-close" (click)="closeDetailView()"></button>
+          </div>
+        </div>
+
+        <!-- Drawer Body -->
+        <div class="drawer-body px-4 pb-4" style="position: relative; z-index: 2;">
+
+          <!-- Identity Card -->
+          <div class="item-id-card p-4 mb-4">
+
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="text-muted small fw-semibold text-uppercase tracking-wider">Item No.</label>
+                <div class="fs-5 fw-bold text-dark d-flex align-items-center">
+                  {{ selectedRowData.itemNo || selectedRowData._realItemNo }}
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="text-muted small fw-semibold text-uppercase tracking-wider">Part No.</label>
+                <div class="fs-5 fw-bold text-primary d-flex align-items-center">
+                  {{ selectedRowData.partNo || '-' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 border-dashed pt-3 mt-1">
+              <div class="col-12">
+                <label class="text-muted small fw-semibold">Item Name</label>
+                <div class="text-dark fw-medium">{{ selectedRowData.name }}</div>
+              </div>
+              <div class="col-6">
+                <label class="text-muted small fw-semibold">Spec</label>
+                <div class="text-secondary fs-7">{{ selectedRowData.spec || '-' }}</div>
+              </div>
+              <div class="col-6">
+                <label class="text-muted small fw-semibold">Vendor</label>
+                <div class="text-primary fs-7 fw-semibold text-truncate" title="{{ selectedRowData.vendorCode || '-' }} - {{ selectedRowData.vendorName || '-' }}">
+                  <i class="bi bi-shop me-1"></i>{{ selectedRowData.vendorCode || '-' }} - {{ selectedRowData.vendorName || '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Title -->
+          <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+            <div class="d-flex align-items-center">
+              <div class="dropdown position-relative me-2">
+                <div class="month-badge text-white px-3 py-1 rounded-pill fw-semibold shadow-sm d-flex align-items-center"
+                     style="background: #0f172a; cursor: pointer; transition: all 0.2s;"
+                     (click)="toggleDropdown('context', $event)">
+                  <i class="bi bi-calendar2-month me-2 text-info"></i>
+                  <span class="text-info fw-bold">{{ displayedMonthContext }}</span>
+                  <i class="bi bi-chevron-down ms-2 small text-secondary" style="font-size: 0.75rem;"></i>
+                </div>
+                <div class="custom-dropdown-menu" [class.show]="contextDropdownOpen" (click)="$event.stopPropagation()" style="min-width: 140px; margin-top: 5px; z-index: 1050;">
+                  <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm0'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm0'" style="cursor: pointer;">
+                    <i class="bi bi-calendar-check me-2" [class.text-primary]="selectedMonthContext === 'm0'"></i>{{ getMonthNameForContext('m0') }}
+                  </a>
+                  <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm1'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm1'" style="cursor: pointer;">
+                    <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm1'"></i>{{ getMonthNameForContext('m1') }}
+                  </a>
+                  <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm2'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm2'" style="cursor: pointer;">
+                    <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm2'"></i>{{ getMonthNameForContext('m2') }}
+                  </a>
+                </div>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 ms-2">Planning Data</h6>
+            </div>
+          </div>
+
+          <!-- Metrics Grid -->
+          <div class="row g-3 mb-4">
+            <!-- BEG -->
+            <div class="col-6">
+              <div class="metric-card bg-white p-3 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted fw-bold">BEG</span>
+                  <div class="icon-box bg-secondary-subtle text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold text-dark mt-auto">{{ getCurrentContextValue('beg') | number }}</div>
+              </div>
+            </div>
+
+            <!-- PO -->
+            <div class="col-6">
+              <div class="metric-card bg-white p-3 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted fw-bold">PO (IN)</span>
+                  <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                    <i class="bi bi-cart-plus"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold text-success mt-auto">{{ getCurrentContextValue('in') | number }}</div>
+              </div>
+            </div>
+
+            <!-- PR -->
+            <div class="col-6">
+              <div class="metric-card bg-white p-3 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted fw-bold">PR</span>
+                  <div class="icon-box bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                    <i class="bi bi-file-earmark-text"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold text-danger mt-auto">{{ getCurrentContextValue('pr') | number }}</div>
+              </div>
+            </div>
+
+            <!-- FORECAST -->
+            <div class="col-6">
+              <div class="metric-card bg-white p-3 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted fw-bold">FORECAST</span>
+                  <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                    <i class="bi bi-graph-up"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold text-primary mt-auto">{{ getCurrentContextValue('forecastPd') | number }}</div>
+              </div>
+            </div>
+
+            <!-- TOTAL USAGE -->
+            <div class="col-6">
+              <div class="metric-card bg-white p-3 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small text-muted fw-bold">USAGE</span>
+                  <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                    <i class="bi bi-calculator"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold text-dark mt-auto">{{ selectedRowData.planSetup | number }}</div>
+              </div>
+            </div>
+
+            <!-- END BALANCE -->
+            <div class="col-6">
+              <div class="metric-card p-3 rounded-4 shadow-sm border h-100 d-flex flex-column"
+                   [ngClass]="getCurrentContextValue('end') < 0 ? 'bg-danger-subtle border-danger-subtle' : 'bg-white border-light'">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-bold" [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-muted'">END BALANCE</span>
+                  <div class="icon-box rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;"
+                       [ngClass]="getCurrentContextValue('end') < 0 ? 'bg-white text-danger' : 'bg-success-subtle text-success'">
+                    <i class="bi bi-wallet2"></i>
+                  </div>
+                </div>
+                <div class="fs-4 fw-bold mt-auto"
+                     [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-dark'">
+                  {{ getCurrentContextValue('end') | number }}
+                </div>
+                <div class="small fw-semibold mt-1" [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-secondary'">
+                  Value: ฿ {{ (getCurrentContextValue('end') < 0 ? 0 : getCurrentContextValue('end')) * (selectedRowData.unitPrice || 0) | number:'1.2-2' }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parameters Section -->
+          <div class="parameters-section mb-4">
+            <h6 class="fw-bold text-dark mb-3">Parameters</h6>
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-primary-subtle border border-primary-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-primary-emphasis fw-bold">NORMAL</span>
+                  <div class="dropdown">
+                    <button class="btn btn-sm border-0 bg-transparent fw-bold text-primary py-0 text-end dropdown-toggle px-2"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none;">
+                      {{ selectedRowData.normalRate }}%
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 modern-dropdown-menu" style="min-width: 100px; max-height: 250px; overflow-y: auto;">
+                      <li *ngFor="let pct of bufferOptions">
+                        <button class="dropdown-item fw-semibold text-center py-2"
+                                [class.active]="selectedRowData.normalRate === pct"
+                                (click)="selectedRowData.normalRate = pct; onDrawerFieldChange('normalRate', pct)">
+                          {{ pct }}%
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex flex-column justify-content-center bg-success-subtle border border-success-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <div class="d-flex justify-content-between align-items-center w-100">
+                    <span class="small text-success-emphasis fw-bold">L/T</span>
+                    <div class="dropdown">
+                      <button class="btn btn-sm border-0 bg-transparent fw-bold text-success py-0 text-end dropdown-toggle px-2"
+                              type="button" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none;">
+                        {{ selectedRowData.lt }} days
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 modern-dropdown-menu" style="min-width: 120px; max-height: 250px; overflow-y: auto;">
+                        <li *ngFor="let days of ltOptions">
+                          <button class="dropdown-item fw-semibold text-center py-2"
+                                  [class.active]="selectedRowData.lt === days"
+                                  (click)="selectedRowData.lt = days; onDrawerFieldChange('lt', days)">
+                            {{ days }} days
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <div class="small fw-semibold text-success-emphasis text-end mt-1 opacity-75">
+                    Arrival: {{ getArrivalDate(selectedRowData.lt) }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-info-subtle border border-info-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-info-emphasis fw-bold">ORDER RATE</span>
+                  <span class="fw-bold text-info-emphasis pe-2">{{ selectedRowData.orderRate || 120 }}%</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-danger-subtle border border-danger-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-danger-emphasis fw-bold">AVG USAGE</span>
+                  <span class="fw-bold text-danger pe-2">{{ (selectedRowData.avgUsage || 1500) | number }}</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-danger-subtle border border-danger-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-danger-emphasis fw-bold">ACHIEVE RATE</span>
+                  <span class="fw-bold text-danger pe-2">{{ selectedRowData.achieveRate != null ? selectedRowData.achieveRate : 100 }}%</span>
+                </div>
+              </div>
+
+              <!-- Unit Price / Pcs -->
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-secondary-subtle border border-secondary-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-secondary-emphasis fw-bold">UNIT PRICE</span>
+                  <span class="fw-bold text-secondary-emphasis pe-2">฿{{ selectedRowData.unitPrice != null ? (selectedRowData.unitPrice | number:'1.2-2') : '-' }}</span>
+                </div>
+              </div>
+
+              <!-- Total Price -->
+              <div class="col-6">
+                <div class="d-flex justify-content-between align-items-center bg-warning-subtle border border-warning-subtle rounded-4 p-2 px-3 shadow-sm h-100 transition-all">
+                  <span class="small text-warning-emphasis fw-bold">TOTAL PRICE</span>
+                  <span class="fw-bold text-warning-emphasis pe-2">฿{{ selectedRowData.amount != null ? (selectedRowData.amount | number:'1.2-2') : '-' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Status Alert -->
+          <div class="order-status-card mt-2">
+            <h6 class="fw-bold text-dark mb-3">Order Status</h6>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden"
+                 [ngClass]="{
+                   'bg-danger-subtle': getCurrentContextValue('end') < 0,
+                   'bg-warning-subtle': getCurrentContextValue('end') === 0,
+                   'bg-success-subtle': getCurrentContextValue('end') > 0
+                 }">
+              <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex align-items-center">
+                  <div class="status-icon rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px; flex-shrink: 0;"
+                       [ngClass]="{
+                         'bg-danger text-white shadow-sm': getCurrentContextValue('end') < 0,
+                         'bg-warning text-dark shadow-sm': getCurrentContextValue('end') === 0,
+                         'bg-success text-white shadow-sm': getCurrentContextValue('end') > 0
+                       }">
+                    <i class="bi fs-4" [ngClass]="{
+                      'bi-exclamation-triangle-fill': getCurrentContextValue('end') < 0,
+                      'bi-exclamation-circle-fill': getCurrentContextValue('end') === 0,
+                      'bi-check-circle-fill': getCurrentContextValue('end') > 0
+                    }"></i>
+                  </div>
+
+                  <div>
+                    <div class="text-uppercase fw-bold small mb-1" style="letter-spacing: 0.5px;"
+                         [ngClass]="{
+                           'text-danger': getCurrentContextValue('end') < 0,
+                           'text-dark': getCurrentContextValue('end') === 0,
+                           'text-success': getCurrentContextValue('end') > 0
+                         }">
+                      {{ getCurrentContextValue('end') < 0 ? 'Action Required' : 'Current Status' }}
+                    </div>
+                    <div class="fs-5 fw-black text-dark mb-0">
+                      {{ getCurrentContextValue('end') < 0 ? 'Shortage Detected' : (getCurrentContextValue('end') === 0 ? 'Stock Empty' : 'Stock Optimal') }}
+                    </div>
+                    <div class="small fw-medium mt-1 text-danger" *ngIf="getCurrentContextValue('end') < 0">
+                      🔥 Needs order: {{ (getCurrentContextValue('end') * -1) | number }} pcs
+                    </div>
+                  </div>
+                </div>
+
+                <button *ngIf="getCurrentContextValue('end') < 0" class="btn btn-sm btn-danger fw-bold shadow-sm px-3 mt-3 rounded-pill d-flex align-items-center w-100 justify-content-center">
+                  <i class="bi bi-cart-plus me-2"></i> Create PR
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Total Amount Summary for Purchase -->
+      <div *ngIf="purchaseRowData.length > 0 && purchaseViewMode === 'price'" class="total-summary-bar mt-3 border-primary bg-light">
+        <span class="text-muted small">แสดงผล <b>{{ displayedPurchaseRowCount }}</b> รายการ</span>
+        <div class="total-amount-badge bg-primary text-white clickable-badge" (click)="openPurchaseSummary()">
+          <i class="bi bi-cart-check"></i>
+          <span class="total-label">Total Purchase Amount:</span>
+          <span class="total-value">฿{{ totalPurchaseAmount.toLocaleString() }}</span>
+          <i class="bi bi-chevron-up ms-3 opacity-75 small"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Import Master Data & Planning -->
+    <div *ngIf="activeTab === 'import'" class="tab-pane fade show active">
+      <div class="import-mesh-bg">
+        <div class="row g-4">
+
+        <!-- Column 1: Import Master Part Data -->
+        <div class="col-lg-6 col-12">
+          <div class="card glass-card h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title text-success fw-bold mb-3">
+                <i class="bi bi-cloud-arrow-up me-2"></i>Import Master Data
+              </h5>
+
+              <div class="mb-4 flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label text-secondary fw-semibold mb-0">Upload Excel or CSV File</label>
+                </div>
+                <input
+                  id="excelFileInput"
+                  type="file"
+                  class="form-control"
+                  accept=".xlsx, .xls, .csv"
+                  (change)="onFileChange($event)">
+              </div>
+
+              <div class="mt-auto">
+                <button class="btn btn-success btn-premium w-100" (click)="importData()" [disabled]="dbConnected === false">
+                  <i class="bi bi-cloud-arrow-up me-1"></i> Browse & Import Master
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Import Planning & Calculate Forecast -->
+        <div class="col-lg-6 col-12">
+          <div class="card glass-card h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title text-primary fw-bold mb-3">
+                <i class="bi bi-calculator me-2"></i>Import Planning Sheet & Calculate Forecast
+              </h5>
+
+
+
+              <!-- Setup Save Target (Prototype) -->
+              <!-- <div class="row g-2 mb-3 border-bottom pb-3">
+                <div class="col-12 text-secondary" style="font-size: 0.8rem;">
+                  <i class="bi bi-folder-fill text-warning me-1"></i> เลือกว่าจะบันทึกข้อมูล Forecast นี้ไว้ที่ไหน:
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-semibold mb-0" style="font-size:0.85rem;">Month</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="importPlanningMonth">
+                    <option *ngFor="let month of months" [value]="month">{{ month }}</option>
+                  </select>
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-semibold mb-0" style="font-size:0.85rem;">Year</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="importPlanningYear">
+                    <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+                  </select>
+                </div>
+                <div class="col-4">
+                  <label class="form-label fw-semibold mb-0" style="font-size:0.85rem;">Revision</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="importPlanningRevision">
+                    <option *ngFor="let rev of revisions" [value]="rev">{{ rev }}</option>
+                  </select>
+                </div>
+              </div> -->
+
+              <div class="mb-4 flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label text-secondary fw-semibold mb-0">Upload Planning Excel File</label>
+                  <a href="javascript:void(0)" class="text-primary text-decoration-none fw-semibold" style="font-size: 0.85rem;" (click)="downloadTemplate()">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>Download Template
+                  </a>
+                </div>
+                <input
+                  id="planningFileInput"
+                  type="file"
+                  class="form-control"
+                  accept=".xlsx, .xls, .csv"
+                  (change)="onPlanningFileChange($event)">
+              </div>
+
+              <div class="mt-auto">
+                <button class="btn btn-primary btn-premium w-100" (click)="importAndCalculatePlanning()">
+                  <i class="bi bi-calculator me-1"></i> Browse & Calculate Forecast
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 4: Purge Master File (Temporarily Deactivated)
+    <div *ngIf="activeTab === 'purge'" class="tab-pane fade show active">
+      <div class="card premium-card border-danger border-top border-4">
+        <div class="card-body">
+          <h5 class="card-title text-danger fw-bold mb-3">
+            <i class="bi bi-exclamation-triangle"></i> Purge Master Part Records (dbo.PartItem2)
+          </h5>
+
+          <div class="danger-alert mb-4">
+            <i class="bi bi-shield-exclamation fs-4"></i>
+            <div>
+              <strong>Security Alert:</strong> การดำเนินการนี้จะทำการลบข้อมูลทั้งหมดในตาราง <strong>dbo.PartItem2</strong> บนเซิร์ฟเวอร์สำรอง <strong>PBGM8G</strong> อย่างถาวรและไม่สามารถกู้คืนได้!
+            </div>
+          </div>
+
+          <div class="row g-4">
+            <div class="col-12 mt-1">
+              <button class="btn btn-danger btn-premium px-4" (click)="deleteData()" [disabled]="dbConnected === false">
+                <i class="bi bi-trash-fill"></i> Purge File Records
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    -->
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  CALCULATION PREVIEW MODAL (Full-screen overlay)            -->
+<!-- ============================================================ -->
+<div *ngIf="showPreviewModal" class="calc-modal-backdrop" (click)="onBackdropClick($event)">
+  <div class="calc-modal-panel">
+
+    <!-- Modal Header -->
+    <div class="calc-modal-header">
+      <div>
+        <h4 class="mb-0"><i class="bi bi-table me-2 text-primary"></i>ตรวจสอบข้อมูลก่อนคำนวณ</h4>
+        <p class="text-muted mb-0 small"><i class="bi bi-file-earmark-excel me-1 text-success"></i>{{ previewFileName }}</p>
+      </div>
+      <button class="btn-close-modal" (click)="closePreviewModal()" [disabled]="isCalculating">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="calc-modal-body">
+      <div class="row g-4">
+
+        <!-- Full Width: Raw Data Preview -->
+        <div class="col-lg-12">
+          <div class="preview-section-label"><i class="bi bi-database me-1"></i>ข้อมูลดิบ (ดึงจาก Excel จำนวน {{ previewOrders.length }} แถว)</div>
+          <div class="preview-table-wrapper">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Part No</th>
+                  <th>Process</th>
+                  <th>Vendor</th>
+                  <th>MC</th>
+                  <th>Part Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of previewOrders; let i = index">
+                  <td class="text-center">{{ i + 1 }}</td>
+                  <td class="fw-semibold">{{ row.partNo || '-' }}</td>
+                  <td class="text-center">{{ row.process || '-' }}</td>
+                  <td class="text-center">{{ row.vendor || '-' }}</td>
+                  <td class="text-center">{{ row.mc || '-' }}</td>
+                  <td class="text-end">{{ (row.partQty ?? 0).toLocaleString() }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Section (shown while calculating) -->
+      <div *ngIf="isCalculating" class="progress-section mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="progress-status-msg"><i class="bi bi-gear-fill spin me-2"></i>{{ calcStatusMsg }}</span>
+          <span class="progress-pct fw-bold">{{ calcProgress }}%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" [style.width.%]="calcProgress"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="calc-modal-footer">
+      <button class="btn btn-secondary btn-premium" (click)="closePreviewModal()" [disabled]="isCalculating">
+        <i class="bi bi-x-lg"></i> ยกเลิก
+      </button>
+      <button class="btn btn-primary btn-premium px-5" (click)="confirmAndCalculate()" [disabled]="isCalculating">
+        <span *ngIf="!isCalculating"><i class="bi bi-play-circle-fill me-1"></i> Start Calculating</span>
+        <span *ngIf="isCalculating"><span class="spinner-border spinner-border-sm me-1"></span> กำลังคำนวณ...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- Purchase Summary Modal -->
+<!-- ============================================================ -->
+<div *ngIf="showSummaryModal" class="calc-modal-backdrop" (click)="closePurchaseSummary()" style="z-index: 1060;">
+  <div class="calc-modal-panel summary-modal-panel" (click)="$event.stopPropagation()" style="max-width: 800px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    <!-- Modal Header -->
+    <div class="calc-modal-header border-bottom pb-3 px-4 pt-4" style="background: #ffffff; border-radius: 20px 20px 0 0;">
+      <div>
+        <h4 class="mb-1 d-flex align-items-center text-primary" style="font-weight: 800;">
+          <i class="bi bi-pie-chart-fill me-2"></i> Purchase Summary
+        </h4>
+        <p class="text-muted small mb-0 fw-semibold">Overview of the currently filtered items</p>
+      </div>
+      <button type="button" class="btn-close" (click)="closePurchaseSummary()"></button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="calc-modal-body bg-light p-4">
+      <div class="row g-4">
+
+        <!-- Top 5 Vendors -->
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+              <h6 class="fw-bold text-dark mb-0"><i class="bi bi-trophy-fill text-warning me-2"></i>Top 5 Vendors</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+              <div *ngIf="topVendors.length === 0" class="text-muted text-center py-4">No data available</div>
+              <div class="vendor-progress-item mb-3" *ngFor="let v of topVendors; let i = index">
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                  <span class="fw-bold text-truncate me-2" style="max-width: 65%;" title="{{v.code}} - {{v.name}}">
+                    <span class="badge bg-secondary-subtle text-secondary me-2 rounded-circle px-2" style="font-size: 0.7rem;">{{i+1}}</span>
+                    <span class="text-dark">{{v.code}}</span>
+                  </span>
+                  <span class="fw-bold text-primary">฿{{v.amount | number:'1.2-2'}}</span>
+                </div>
+                <div class="progress" style="height: 6px; border-radius: 10px; background-color: #e2e8f0;">
+                  <div class="progress-bar" role="progressbar" [style.width.%]="v.percent" aria-valuemin="0" aria-valuemax="100" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 10px;"></div>
+                </div>
+                <div class="small text-muted mt-1 text-truncate" title="{{v.name}}">{{v.name}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cost by Process -->
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+              <h6 class="fw-bold text-dark mb-0"><i class="bi bi-gear-wide-connected text-info me-2"></i>Cost by Process</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+              <div *ngIf="processSummary.length === 0" class="text-muted text-center py-4">No data available</div>
+              <div class="vendor-progress-item mb-3" *ngFor="let p of processSummary">
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                  <span class="fw-bold text-dark text-truncate me-2">{{p.name}}</span>
+                  <span class="fw-bold text-info">฿{{p.amount | number:'1.2-2'}}</span>
+                </div>
+                <div class="progress" style="height: 6px; border-radius: 10px; background-color: #e2e8f0;">
+                  <div class="progress-bar" role="progressbar" [style.width.%]="p.percent" aria-valuemin="0" aria-valuemax="100" style="background: linear-gradient(90deg, #0ea5e9, #38bdf8); border-radius: 10px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="row mt-4 mb-2">
+        <div class="col-12">
+          <div class="d-flex justify-content-around align-items-center bg-white py-4 px-3 rounded-4 shadow-sm border border-light">
+            <div class="text-center w-100">
+              <div class="text-muted small fw-bold mb-1 tracking-wider">TOTAL ITEMS</div>
+              <div class="fs-4 fw-black text-dark">{{ summaryTotalItems | number }}</div>
+            </div>
+            <div class="border-start" style="height: 50px; border-color: #e2e8f0 !important;"></div>
+            <div class="text-center w-100">
+              <div class="text-muted small fw-bold mb-1 tracking-wider">TOTAL PIECES</div>
+              <div class="fs-4 fw-black text-dark">{{ summaryTotalPieces | number }}</div>
+            </div>
+            <div class="border-start" style="height: 50px; border-color: #e2e8f0 !important;"></div>
+            <div class="text-center w-100">
+              <div class="text-muted small fw-bold mb-1 tracking-wider">GRAND TOTAL</div>
+              <div class="fs-4 fw-black text-primary">฿{{ summaryTotalAmount | number:'1.2-2' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+
+  </div>
+
+  <!-- Full Screen Detail Page View -->
+  <div *ngIf="isDetailViewOpen && selectedRowData" class="detail-page-view fade-in p-4 m-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-back-dashboard me-4 shadow-sm d-flex align-items-center" (click)="closeDetailView()">
+          <i class="bi bi-arrow-left fs-5 me-2"></i> Back
+        </button>
+        <h4 class="fw-bold text-dark mb-0 d-flex align-items-center">
+          <i class="bi bi-info-circle-fill text-primary me-2"></i> Item Details
+        </h4>
+      </div>
+
+      <div class="d-flex align-items-center">
+        <div class="month-badge bg-white text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold shadow-sm d-flex align-items-center me-3"
+             style="cursor: pointer; transition: all 0.2s;"
+             (click)="toggleDropdown('context', $event)">
+          <i class="bi bi-calendar2-month me-2 text-primary"></i>
+          <span class="text-primary fw-bold">{{ displayedMonthContext }}</span>
+          <i class="bi bi-chevron-down ms-2 small text-secondary"></i>
+        </div>
+        <div class="custom-dropdown-menu" [class.show]="contextDropdownOpen" (click)="$event.stopPropagation()" style="min-width: 140px; margin-top: 5px; z-index: 1050; position: absolute; right: 20px; top: 70px;">
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm0'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm0'" style="cursor: pointer;">
+            <i class="bi bi-calendar-check me-2" [class.text-primary]="selectedMonthContext === 'm0'"></i>{{ getMonthNameForContext('m0') }}
+          </a>
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm1'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm1'" style="cursor: pointer;">
+            <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm1'"></i>{{ getMonthNameForContext('m1') }}
+          </a>
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm2'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm2'" style="cursor: pointer;">
+            <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm2'"></i>{{ getMonthNameForContext('m2') }}
+          </a>
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm3'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm3'" style="cursor: pointer;">
+            <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm3'"></i>{{ getMonthNameForContext('m3') }}
+          </a>
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm4'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm4'" style="cursor: pointer;">
+            <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm4'"></i>{{ getMonthNameForContext('m4') }}
+          </a>
+          <a class="custom-dropdown-item d-flex align-items-center" (click)="selectedMonthContext = 'm5'; contextDropdownOpen = false" [class.active]="selectedMonthContext === 'm5'" style="cursor: pointer;">
+            <i class="bi bi-calendar-plus me-2" [class.text-primary]="selectedMonthContext === 'm5'"></i>{{ getMonthNameForContext('m5') }}
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout Body -->
+    <div class="row g-4">
+
+      <!-- LEFT PANEL -->
+      <div class="col-xl-4 col-lg-5">
+        <!-- Identity Card -->
+        <div class="item-id-card p-4 mb-4 shadow-sm border-0 bg-white">
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="text-muted small fw-semibold text-uppercase tracking-wider">Item No.</label>
+              <div class="fs-4 fw-bold text-dark d-flex align-items-center">
+                {{ selectedRowData.itemNo || selectedRowData._realItemNo }}
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small fw-semibold text-uppercase tracking-wider">Part No.</label>
+              <div class="fs-4 fw-bold text-primary d-flex align-items-center">
+                {{ selectedRowData.partNo || '-' }}
+              </div>
+            </div>
+          </div>
+          <div class="row g-3 border-dashed pt-3 mt-1">
+            <div class="col-12">
+              <label class="text-muted small fw-semibold">Item Name</label>
+              <div class="text-dark fw-medium fs-5">{{ selectedRowData.name }}</div>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small fw-semibold">Spec</label>
+              <div class="text-secondary">{{ selectedRowData.spec || '-' }}</div>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small fw-semibold">Vendor</label>
+              <div class="text-primary fw-semibold text-truncate" title="{{ selectedRowData.vendorCode || '-' }} - {{ selectedRowData.vendorName || '-' }}">
+                <i class="bi bi-shop me-1"></i>{{ selectedRowData.vendorCode || '-' }} - {{ selectedRowData.vendorName || '-' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parameters -->
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-sliders me-2 text-secondary"></i>Parameters</h6>
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="d-flex justify-content-between align-items-center bg-primary-subtle border border-primary-subtle rounded-4 p-3 shadow-sm h-100">
+              <span class="small text-primary-emphasis fw-bold">NORMAL</span>
+              <div class="dropdown">
+                <button class="btn btn-sm border-0 bg-transparent fw-bold text-primary py-0 fs-5 text-end dropdown-toggle px-2"
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none;">
+                  {{ selectedRowData.normalRate }}%
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 modern-dropdown-menu">
+                  <li *ngFor="let pct of bufferOptions">
+                    <button class="dropdown-item fw-semibold text-center py-2" [class.active]="selectedRowData.normalRate === pct" (click)="selectedRowData.normalRate = pct; onDrawerFieldChange('normalRate', pct)">
+                      {{ pct }}%
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex flex-column justify-content-center bg-success-subtle border border-success-subtle rounded-4 p-3 shadow-sm h-100">
+              <div class="d-flex justify-content-between align-items-center w-100">
+                <span class="small text-success-emphasis fw-bold">L/T</span>
+                <div class="dropdown">
+                  <button class="btn btn-sm border-0 bg-transparent fw-bold text-success py-0 fs-5 text-end dropdown-toggle px-2"
+                          type="button" data-bs-toggle="dropdown" aria-expanded="false" style="box-shadow: none;">
+                    {{ selectedRowData.lt }} days
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 modern-dropdown-menu">
+                    <li *ngFor="let days of ltOptions">
+                      <button class="dropdown-item fw-semibold text-center py-2" [class.active]="selectedRowData.lt === days" (click)="selectedRowData.lt = days; onDrawerFieldChange('lt', days)">
+                        {{ days }} days
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="small fw-semibold text-success-emphasis text-end mt-1 opacity-75">
+                Arrival: {{ getArrivalDate(selectedRowData.lt) }}
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between align-items-center bg-info-subtle border border-info-subtle rounded-4 p-3 shadow-sm h-100">
+              <span class="small text-info-emphasis fw-bold">ORDER RATE</span>
+              <span class="fw-bold fs-5 text-info-emphasis pe-2">{{ selectedRowData.orderRate || 120 }}%</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between align-items-center bg-danger-subtle border border-danger-subtle rounded-4 p-3 shadow-sm h-100">
+              <span class="small text-danger-emphasis fw-bold">AVG USAGE</span>
+              <span class="fw-bold fs-5 text-danger pe-2">{{ (selectedRowData.avgUsage || 1500) | number }}</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between align-items-center bg-danger-subtle border border-danger-subtle rounded-4 p-3 shadow-sm h-100">
+              <span class="small text-danger-emphasis fw-bold text-truncate me-1">ACHIEVE</span>
+              <span class="fw-bold fs-5 text-danger pe-2">{{ selectedRowData.achieveRate != null ? selectedRowData.achieveRate : 100 }}%</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="d-flex justify-content-between align-items-center bg-secondary-subtle border border-secondary-subtle rounded-4 p-3 shadow-sm h-100">
+              <span class="small text-secondary-emphasis fw-bold">U. PRICE</span>
+              <span class="fw-bold fs-6 text-secondary-emphasis pe-1">฿{{ selectedRowData.unitPrice != null ? (selectedRowData.unitPrice | number:'1.2-2') : '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="col-xl-8 col-lg-7">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Planning Data</h6>
+
+        <div class="row g-4 mb-4">
+          <!-- BEG -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card bg-white p-4 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">BEG BALANCE</span>
+                <div class="icon-box bg-secondary-subtle text-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="bi bi-box-arrow-in-right fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold text-dark mt-auto">{{ getCurrentContextValue('beg') | number }}</div>
+            </div>
+          </div>
+
+          <!-- PO -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card bg-white p-4 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">PO (INCOMING)</span>
+                <div class="icon-box bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="bi bi-cart-plus fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold text-success mt-auto">{{ getCurrentContextValue('in') | number }}</div>
+            </div>
+          </div>
+
+          <!-- PR -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card bg-white p-4 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">PR (REQUEST)</span>
+                <div class="icon-box bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="bi bi-file-earmark-text fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold text-danger mt-auto">{{ getCurrentContextValue('pr') | number }}</div>
+            </div>
+          </div>
+
+          <!-- FORECAST -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card bg-white p-4 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">FORECAST</span>
+                <div class="icon-box bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="bi bi-graph-up fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold text-primary mt-auto">{{ getCurrentContextValue('forecastPd') | number }}</div>
+            </div>
+          </div>
+
+          <!-- TOTAL USAGE -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card bg-white p-4 rounded-4 shadow-sm border border-light h-100 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted fw-bold">USAGE</span>
+                <div class="icon-box bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                  <i class="bi bi-calculator fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold text-dark mt-auto">{{ selectedRowData.planSetup | number }}</div>
+            </div>
+          </div>
+
+          <!-- END BALANCE -->
+          <div class="col-md-6 col-lg-4">
+            <div class="metric-card p-4 rounded-4 shadow-sm border h-100 d-flex flex-column"
+                 [ngClass]="getCurrentContextValue('end') < 0 ? 'bg-danger-subtle border-danger-subtle' : 'bg-white border-light'">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="fw-bold text-uppercase" [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-muted'">End Balance</span>
+                <div class="icon-box rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;"
+                     [ngClass]="getCurrentContextValue('end') < 0 ? 'bg-white text-danger' : 'bg-success-subtle text-success'">
+                  <i class="bi bi-wallet2 fs-5"></i>
+                </div>
+              </div>
+              <div class="fs-1 fw-bold mt-auto"
+                   [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-dark'">
+                {{ getCurrentContextValue('end') | number }}
+              </div>
+              <div class="fs-6 fw-semibold mt-1" [ngClass]="getCurrentContextValue('end') < 0 ? 'text-danger' : 'text-secondary'">
+                Total Value: ฿ {{ (getCurrentContextValue('end') < 0 ? 0 : getCurrentContextValue('end')) * (selectedRowData.unitPrice || 0) | number:'1.2-2' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6-Month Stock Trend Sparkline -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-3 bg-white">
+          <div class="card-body p-3 px-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-dark mb-0"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>6-Month Stock Trend</h6>
+              <span class="badge bg-light text-secondary border px-2 py-1">End Balance Projection</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-end" style="height: 100px; gap: 8px;">
+              <!-- m0 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m0') }}: {{ selectedRowData.end }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.end < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.end | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.end > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.end < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm0' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m0') | slice:0:3 | uppercase }}</div>
+              </div>
+              <!-- m1 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m1') }}: {{ selectedRowData.m1End }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.m1End < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.m1End | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.m1End > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.m1End < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm1' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m1') | slice:0:3 | uppercase }}</div>
+              </div>
+              <!-- m2 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m2') }}: {{ selectedRowData.m2End }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.m2End < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.m2End | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.m2End > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.m2End < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm2' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m2') | slice:0:3 | uppercase }}</div>
+              </div>
+              <!-- m3 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m3') }}: {{ selectedRowData.m3End }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.m3End < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.m3End | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.m3End > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.m3End < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm3' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m3') | slice:0:3 | uppercase }}</div>
+              </div>
+              <!-- m4 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m4') }}: {{ selectedRowData.m4End }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.m4End < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.m4End | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.m4End > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.m4End < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm4' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m4') | slice:0:3 | uppercase }}</div>
+              </div>
+              <!-- m5 -->
+              <div class="d-flex flex-column align-items-center w-100 h-100 justify-content-end" title="{{ getMonthNameForContext('m5') }}: {{ selectedRowData.m5End }}">
+                <div class="fw-bold mb-1" style="font-size: 0.75rem;" [ngClass]="selectedRowData.m5End < 0 ? 'text-danger' : 'text-success'">{{ selectedRowData.m5End | number }}</div>
+                <div class="w-100 rounded-top-2 transition-all"
+                     [ngStyle]="{
+                       'height': (selectedRowData.m5End > 0 ? '100%' : '15%'),
+                       'background-color': selectedRowData.m5End < 0 ? '#dc3545' : '#198754',
+                       'opacity': selectedMonthContext === 'm5' ? '1' : '0.4'
+                     }"></div>
+                <div class="small fw-bold mt-2 text-muted" style="font-size: 0.7rem;">{{ getMonthNameForContext('m5') | slice:0:3 | uppercase }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Status Alert -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-2"
+             [ngClass]="{
+               'bg-danger-subtle': getCurrentContextValue('end') < 0,
+               'bg-warning-subtle': getCurrentContextValue('end') === 0,
+               'bg-success-subtle': getCurrentContextValue('end') > 0
+             }">
+          <div class="card-body p-4 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="status-icon rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 64px; height: 64px; flex-shrink: 0;"
+                   [ngClass]="{
+                     'bg-danger text-white shadow-sm': getCurrentContextValue('end') < 0,
+                     'bg-warning text-dark shadow-sm': getCurrentContextValue('end') === 0,
+                     'bg-success text-white shadow-sm': getCurrentContextValue('end') > 0
+                   }">
+                <i class="bi fs-1" [ngClass]="{
+                  'bi-exclamation-triangle-fill': getCurrentContextValue('end') < 0,
+                  'bi-exclamation-circle-fill': getCurrentContextValue('end') === 0,
+                  'bi-check-circle-fill': getCurrentContextValue('end') > 0
+                }"></i>
+              </div>
+
+              <div>
+                <div class="text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;"
+                     [ngClass]="{
+                       'text-danger': getCurrentContextValue('end') < 0,
+                       'text-dark': getCurrentContextValue('end') === 0,
+                       'text-success': getCurrentContextValue('end') > 0
+                     }">
+                  {{ getCurrentContextValue('end') < 0 ? 'Action Required' : 'Current Status' }}
+                </div>
+                <div class="fs-3 fw-black text-dark mb-0">
+                  {{ getCurrentContextValue('end') < 0 ? 'Shortage Detected' : (getCurrentContextValue('end') === 0 ? 'Stock Empty' : 'Stock Optimal') }}
+                </div>
+                <div class="fw-medium mt-1 fs-5 text-danger" *ngIf="getCurrentContextValue('end') < 0">
+                  🔥 Needs order: {{ (getCurrentContextValue('end') * -1) | number }} pcs
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="getCurrentContextValue('end') < 0">
+              <button class="btn btn-danger fw-bold shadow-sm px-4 py-2 rounded-pill d-flex align-items-center">
+                <i class="bi bi-cart-plus me-2 fs-5"></i> Create PR
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!--  ADD ITEM MODAL (Vendor Page)                                -->
+<!-- ============================================================ -->
+<div *ngIf="showAddItemModal" class="calc-modal-backdrop" (click)="closeAddItemModal()" style="z-index: 1060;">
+  <div class="calc-modal-panel summary-modal-panel" (click)="$event.stopPropagation()" style="max-width: 500px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div class="calc-modal-header border-bottom pb-3 px-4 pt-4" style="background: #ffffff; border-radius: 20px 20px 0 0;">
+      <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-cart-plus me-2 text-primary"></i>Add Item to Order</h5>
+    </div>
+    <div class="calc-modal-body bg-light p-4">
+      <div class="mb-4">
+        <label class="form-label fw-bold text-secondary small text-uppercase">Select Item</label>
+        <div class="position-relative">
+          <input type="text" class="form-control rounded-pill px-4 py-2" list="vendorItemsList" [(ngModel)]="addManualItemNo" placeholder="Search Item No or Name" style="border: 1px solid #dee2e6; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+          <i class="bi bi-search position-absolute text-muted" style="right: 15px; top: 50%; transform: translateY(-50%);"></i>
+        </div>
+        <datalist id="vendorItemsList">
+          <option *ngFor="let item of vendorItems" [value]="item.itemNo">{{ item.itemNo }} - {{ item.name }}</option>
+        </datalist>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold text-secondary small text-uppercase">Order Qty</label>
+        <div class="position-relative">
+          <input type="number" class="form-control rounded-pill px-4 py-2" [(ngModel)]="addManualQty" placeholder="Enter quantity" min="1" style="border: 1px solid #dee2e6; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+          <i class="bi bi-123 position-absolute text-muted" style="right: 15px; top: 50%; transform: translateY(-50%);"></i>
+        </div>
+      </div>
+    </div>
+    <div class="calc-modal-footer bg-white border-top p-3 d-flex justify-content-end" style="border-radius: 0 0 20px 20px;">
+      <button class="btn btn-light rounded-pill px-4 fw-bold me-2" (click)="closeAddItemModal()">Cancel</button>
+      <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" (click)="confirmAddItem()" [disabled]="!addManualItemNo || !addManualQty || addManualQty <= 0">Add to List</button>
+    </div>
+  </div>
+</div>

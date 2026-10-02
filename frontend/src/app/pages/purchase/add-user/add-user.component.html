@@ -1,0 +1,214 @@
+<div class="content-area">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="h1 fw-bold text-primary mb-0">Employee Management</h1>
+
+    <div class="d-flex gap-2" style="margin-right: 80px;">
+
+
+      <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal"
+        data-bs-target="#Insert">
+        <i class="bi bi-person-fill-add fs-5"></i>
+        <span>Add User</span>
+      </button>
+    </div>
+  </div>
+
+  <p class="text-secondary mb-4">Manage users who have permission to access the system.</p>
+
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="bg-light">
+            <tr>
+              <th class="py-3 ps-3 rounded-top-start">No.</th>
+              <th class="py-3">Employee ID</th>
+              <th class="py-3">Employee Name</th>
+              <th class="py-3">Role</th>
+              <th class="py-3">Username</th>
+              <th class="py-3">Password</th>
+              <th class="py-3">Email</th>
+              <th class="py-3">Email Subscription</th>
+              <th class="py-3 pe-3 text-center rounded-top-end">Edit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let group of groupedEmployees | keyvalue; trackBy: trackByGroup">
+              <!-- Group Header -->
+              <tr class="table-light">
+                <td colspan="9" class="py-2 px-3 fw-bold text-muted text-uppercase small">
+                  <i class="bi bi-people-fill me-2"></i> Role: {{ group.key }}
+                </td>
+              </tr>
+
+              <!-- Employees -->
+              <tr *ngFor="let emp of group.value; let i = index; trackBy: trackByEmp">
+                <td class="ps-3">{{ i + 1 }}</td>
+
+                <!-- Employee ID -->
+                <td><span class="fw-medium text-dark">{{ emp.Employee_ID }}</span></td>
+
+                <!-- Employee Name -->
+                <td *ngIf="editingId !== emp.Employee_ID">{{ emp.Employee_Name }}</td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <input class="form-control form-control-sm" [(ngModel)]="editForm.Employee_Name">
+                </td>
+
+                <!-- Role -->
+                <td *ngIf="editingId !== emp.Employee_ID">
+                  <span class="badge rounded-pill" [ngClass]="getRoleBadgeClass(emp.Role)">
+                    {{ emp.Role }}
+                  </span>
+                </td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="editForm.Role"
+                    placeholder="Select Role" class="custom-ng-select-sm" appendTo="body">
+                  </ng-select>
+                </td>
+
+                <!-- Username -->
+                <td *ngIf="editingId !== emp.Employee_ID" class="text-muted">{{ emp.Username }}</td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <input class="form-control form-control-sm" [(ngModel)]="editForm.Username">
+                </td>
+
+                <!-- Password -->
+                <td *ngIf="editingId !== emp.Employee_ID" class="text-muted">••••••</td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <input class="form-control form-control-sm" [(ngModel)]="editForm.Password" type="text"
+                    placeholder="New Password">
+                </td>
+
+                <!-- Email -->
+                <td *ngIf="editingId !== emp.Employee_ID" class="text-muted">{{ emp.Email }}</td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <input class="form-control form-control-sm" [(ngModel)]="editForm.Email" type="email">
+                </td>
+
+                <!-- Subscription -->
+                <td *ngIf="editingId !== emp.Employee_ID">
+                  <span class="badge rounded-pill"
+                    [ngClass]="emp.Subscription === 'Subscribed' ? 'sub-subscribed' : 'sub-unsubscribed'">
+                    {{ emp.Subscription || 'Unsubscribed' }}
+                  </span>
+                </td>
+                <td *ngIf="editingId === emp.Employee_ID">
+                  <select class="form-select form-select-sm" [(ngModel)]="editForm.Subscription"
+                    style="min-width: 130px;">
+                    <option value="Subscribed">Subscribed</option>
+                    <option value="Unsubscribed">Unsubscribed</option>
+                  </select>
+                </td>
+
+                <!-- Edit Actions -->
+                <td class="text-center">
+                  <ng-container *ngIf="editingId !== emp.Employee_ID; else editingBtns">
+                    <button class="btn btn-outline-primary btn-sm border-0 rounded-circle" (click)="startEdit(emp)"
+                      [disabled]="isViewer()" title="Edit">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                  </ng-container>
+
+                  <ng-template #editingBtns>
+                    <div class="d-flex justify-content-center gap-1">
+                      <button class="btn btn-success btn-sm rounded-circle" (click)="saveEdit(emp)" title="Save">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                      <button class="btn btn-secondary btn-sm rounded-circle" (click)="cancelEdit()" title="Cancel">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </div>
+                  </ng-template>
+                </td>
+              </tr>
+            </ng-container>
+
+            <tr *ngIf="!groupedEmployees || (groupedEmployees | keyvalue)?.length === 0">
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                No employees found.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div class="modal fade" id="Insert" tabindex="-1" aria-labelledby="InsertLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="InsertLabel">Add Employee</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <form>
+          <!-- Role -->
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <ng-select [items]="Role" bindLabel="label" bindValue="value" [(ngModel)]="Role_" name="Role"
+              [clearable]="true" placeholder="Select a role" appendTo="body">
+            </ng-select>
+            <small class="form-text text-muted">Choose Role For User</small>
+          </div>
+
+          <!-- Employee ID & Name -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="EmployeeId" class="form-label">Employee ID</label>
+              <input type="text" id="EmployeeId" class="form-control" name="EmployeeId" [(ngModel)]="EmployeeId_" />
+            </div>
+            <div class="col">
+              <label for="EmployeeName" class="form-label">Employee Name</label>
+              <input type="text" id="EmployeeName" class="form-control" name="EmployeeName"
+                [(ngModel)]="EmployeeName_" />
+              <small class="form-text text-muted">Employee full name</small>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Password" class="form-label">Password</label>
+              <input type="text" id="Password" class="form-control" name="Password" [(ngModel)]="Password_" />
+              <small class="form-text text-muted">Login Password</small>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Email" class="form-label">Email</label>
+              <input type="email" id="Email" class="form-control" name="Email" [(ngModel)]="Email_" />
+              <small class="form-text text-muted">Contact email (Optional)</small>
+            </div>
+          </div>
+
+          <!-- Subscription -->
+          <div class="mb-3 row">
+            <div class="col">
+              <label for="Subscription" class="form-label">Email Subscription</label>
+              <select id="Subscription" class="form-select" name="Subscription" [(ngModel)]="Subscription_">
+                <option value="Subscribed">Subscribed</option>
+                <option value="Unsubscribed">Unsubscribed</option>
+              </select>
+              <small class="form-text text-muted">Choose Email Subscription Status</small>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" (click)="addEmployee()" style="width: 150px;">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+# ÄÄÄ Environment & Secrets ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+.env
+.env.*
+!.env.example
+credentials.ini
+!credentials.ini.example
+
+# ÄÄÄ Dependencies & Build Outputs ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+node_modules/
+dist/
+.angular/
+.vs/
+.omc/
+.serena/
+__pycache__/
+
+# ÄÄÄ Large Data & Uploads ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+auto/ItemMaster_Loader/Raw_output_data/
+backend/uploads/
+*.zip
+*.bin
+*.tar.gz
+*.log
+
+# ÄÄÄ Scratch Tests ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+backend/test_*.js
+backend/playground/
+backend/scratch/
+scratch/
+scripts/scratch/
+*.local.js

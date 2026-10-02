@@ -1,0 +1,78 @@
+<div class="content-area">
+  <div class="header-group">
+    <div class="header">
+      <h1 class="h1">SmartRackGraph Analyze</h1>
+      <p class="p">Analytic data SmartRack to Graph</p>
+    </div>
+  </div>
+
+
+
+  <!-- ส่วนการ์ดกราฟ -->
+  <!-- การ์ดแรก Website Views -->
+  <div class="card-grid">
+    <!-- แถวแรก: Stacked Bar Chart ขยายเต็มแถว -->
+    <div class="card large" style="grid-column: span 2;">
+      <h3>Overview</h3>
+      <p class="sub-text">Show dashboard</p>
+      <div class="controls">
+        <label>
+          <input type="radio" name="level" value="day" [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()">
+          Day
+        </label>
+        <label>
+          <input type="radio" name="level" value="month" [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()">
+          Month
+        </label>
+        <label>
+          <input type="radio" name="level" value="year" [(ngModel)]="selectedLevel" (change)="renderStackedBarChart()">
+          Year
+        </label>
+
+        <label>Top N:</label>
+        <input type="number" id="topNInput" min="1" max="20" [(ngModel)]="topN1" (change)="renderStackedBarChart()">
+        <label>Division:</label>
+        <select id="division" [(ngModel)]="selectedDivisionStacked" (change)="renderStackedBarChart()">
+          <option value="ทั้งหมด">Select All</option>
+          <option *ngFor="let d of Divisions" [value]="d">{{d}}</option>
+        </select>
+        <input type="date" [(ngModel)]="selectDatestart" />
+        <input type="date" [(ngModel)]="selectDateend" />
+
+      </div>
+
+      <canvas id="stackedSalesChart" style="width: 100%; height: 25%;"></canvas>
+    </div>
+
+    <!-- แถวสอง: Status -->
+    <div class="card" style="width: 400px;height: 600px">
+      <h3>Status</h3>
+      <p class="sub-text">Show Status Complete & Waiting to AS400.</p>
+      <div class="controls">
+        <ng-select class="select" style="width: 400px" [items]="divisions" bindLabel="name" bindValue="name"
+          [(ngModel)]="selectedDivisions" [multiple]="true" placeholder="Select Division"
+          (change)="renderStatusChart()">
+        </ng-select>
+      </div>
+      <canvas id="dailySalesChart"></canvas>
+    </div>
+
+    <!-- แถวสาม: Most Item Select -->
+    <div class="card" style="width: 800px;height: 600px;">
+      <h3>Most Item Select</h3>
+      <p class="sub-text">Show Most Item Select.</p>
+
+      <div class="controls">
+        <label>Number of ItemNo:</label>
+        <input id="topN" type="number" [(ngModel)]="topN" min="1" (change)="renderHorizontalBarChart()">
+        <label>Division:</label>
+        <select id="division" [(ngModel)]="selectedDivision" (change)="renderHorizontalBarChart()">
+          <option value="ทั้งหมด">Select All</option>
+          <option *ngFor="let d of Divisions" [value]="d">{{d}}</option>
+        </select>
+      </div>
+
+      <canvas id="horizontalBarChart" width="800px" height="500px"></canvas>
+    </div>
+  </div>
+</div>

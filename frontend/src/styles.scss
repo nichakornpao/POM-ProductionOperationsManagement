@@ -1,0 +1,1234 @@
+// Blobal style.scss
+@import '@angular/cdk/overlay-prebuilt.css';
+
+/* Ensure CDK Overlay is always on top (higher than PrimeNG 999999?) */
+.cdk-overlay-container {
+  z-index: 99999 !important;
+}
+
+/* Ensure SweetAlert2 popups render above the Notification Inbox (z-index: 9998) */
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --font-primary: 'Kanit', sans-serif;
+  --color-primary: #3b82f6;
+  /* Modern Blue */
+  --color-primary-hover: #2563eb;
+  --color-secondary: #64748b;
+  /* Slate */
+  --color-bg: #f3f4f6;
+  /* Light Gray */
+  --color-surface: #ffffff;
+  --color-text-main: #1f2937;
+  /* Gray 800 */
+  --color-text-sub: #4b5563;
+  /* Gray 600 */
+  --color-border: #cbd5e1;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- PrimeNG DatePicker/Calendar Global Fixes --- */
+/* Target all possible panel classes to ensure background is opaque */
+.p-datepicker,
+.p-datepicker-panel,
+.p-calendar-panel,
+.p-input-overlay {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #e2e8f0 !important;
+  z-index: 999999 !important;
+  border-radius: 12px !important;
+  /* Softer rounded corners */
+  padding: 0.75rem !important;
+  min-width: 250px !important;
+  color: #1f2937 !important;
+
+  /* Header Styling */
+  .p-datepicker-header {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 0.5rem 0 !important;
+    margin-bottom: 0.5rem !important;
+
+    .p-datepicker-title {
+      font-weight: 700 !important;
+      color: #1f2937 !important;
+      font-size: 0.95rem !important;
+    }
+
+    button {
+      color: #64748b !important;
+      width: 2.25rem !important;
+      height: 2.25rem !important;
+      border-radius: 50% !important;
+
+      &:hover {
+        background-color: #f1f5f9 !important;
+        color: #3b82f6 !important;
+      }
+    }
+  }
+
+  /* Table Grid */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+
+    th {
+      color: #64748b !important;
+      font-weight: 600 !important;
+      padding: 0.5rem !important;
+      font-size: 0.8rem !important;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    td {
+      padding: 0.125rem !important;
+
+      span {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+        border-radius: 50% !important;
+        /* Back to rounded/circle for balance */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.875rem !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background-color: transparent !important;
+
+        &.p-highlight {
+          background-color: #3b82f6 !important;
+          /* Corporate Blue */
+          color: #ffffff !important;
+          font-weight: 600 !important;
+          box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        &:not(.p-highlight):not(.p-disabled):hover {
+          background-color: #f1f5f9 !important;
+          color: #3b82f6 !important;
+        }
+
+        &.p-datepicker-other-month {
+          color: #cbd5e1 !important;
+        }
+      }
+    }
+  }
+
+  /* Footer Buttonbar (Clear/Today) */
+  .p-datepicker-buttonbar {
+    border-top: 1px solid #f1f5f9 !important;
+    padding: 0.75rem 0 0 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    background-color: #ffffff !important;
+
+    button {
+      background: transparent !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #3b82f6 !important;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      padding: 0.4rem 1rem !important;
+      cursor: pointer !important;
+      border-radius: 50px !important;
+      /* Pill shape for buttons */
+      transition: all 0.2s !important;
+
+      &:hover {
+        background-color: #f0f7ff !important;
+        border-color: #3b82f6 !important;
+      }
+
+      &:last-child {
+        background-color: #f8fafc !important;
+        color: #64748b !important;
+
+        &:hover {
+          background-color: #fee2e2 !important;
+          color: #ef4444 !important;
+          border-color: #fecaca !important;
+        }
+      }
+    }
+  }
+}
+
+// ==========================================
+//    ng-select Dropdown Panel Global Fix
+// ==========================================
+.ng-dropdown-panel {
+  z-index: 1060 !important;
+  /* Higher than Bootstrap Modal (1055) */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 8px !important;
+  border: 1px solid #cbd5e1 !important;
+  background-color: #ffffff !important;
+  min-width: max-content !important;
+  max-width: 380px !important;
+
+  .ng-dropdown-panel-items {
+    .ng-option {
+      white-space: nowrap !important;
+      padding: 7px 12px !important;
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
+
+      &.ng-option-marked {
+        background-color: #f1f5f9 !important;
+        color: #1d4ed8 !important;
+      }
+
+      &.ng-option-selected {
+        background-color: #eff6ff !important;
+        color: #2563eb !important;
+        font-weight: 600 !important;
+      }
+    }
+  }
+}
+
+
+// ==========================================
+//    SweetAlert2 Premium Theme (Global)
+// ==========================================
+.swal-premium-popup {
+  border-radius: 20px !important;
+  padding: 1.5rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.swal-premium-title {
+  font-family: var(--font-primary) !important;
+  letter-spacing: -0.02em !important;
+  padding-top: 0 !important;
+}
+
+.swal-premium-confirm {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  border-radius: 12px !important;
+  padding: 12px 32px !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
+  border: none !important;
+  transition: all 0.2s !important;
+  margin: 10px !important;
+
+  &:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 15px 20px -3px rgba(37, 99, 235, 0.4) !important;
+  }
+}
+
+.swal-premium-cancel {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  border-radius: 12px !important;
+  padding: 12px 32px !important;
+  font-weight: 600 !important;
+  border: 1px solid #e2e8f0 !important;
+  transition: all 0.2s !important;
+  margin: 10px !important;
+
+  &:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+  }
+}
+
+// Success override
+.swal-premium-confirm-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 15px 20px -3px rgba(16, 185, 129, 0.4) !important;
+  }
+}
+
+// ==========================================
+//    Angular Material Datepicker Customization
+// ==========================================
+
+/* 1. Form Field Container — SINGLE consolidated rule */
+.mat-mdc-form-field-flex {
+  display: flex !important;
+  align-items: center !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 10px 0 0 !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden !important;
+  /* Prevent children from overflowing */
+}
+
+/* Strip the outer wrapper — removes the white box behind the datepicker */
+.mat-mdc-text-field-wrapper {
+  background-color: transparent !important;
+  padding: 0 !important;
+  height: 38px !important;
+  overflow: visible !important;
+}
+
+/* Ensure the root form field has no extra spacing */
+.mat-mdc-form-field {
+  line-height: normal !important;
+}
+
+.mat-mdc-form-field-flex:hover {
+  border-color: #cbd5e1 !important;
+}
+
+.mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+/* Remove default underline/ripple */
+.mdc-line-ripple {
+  display: none !important;
+}
+
+/* 2. Calendar Popup Background -> White */
+.mat-datepicker-content {
+  background-color: #ffffff !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+/* 3. Calendar Body Styling */
+.mat-calendar-body-cell-content {
+  border-radius: 50% !important;
+  color: #1e293b !important;
+  font-weight: 500 !important;
+}
+
+/* Hover state for enabled dates */
+.mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover>.mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
+  background-color: #f1f5f9 !important;
+  color: #3b82f6 !important;
+}
+
+/* Selected Date */
+.mat-calendar-body-selected {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* 4. Disabled Dates (Past) -> Faded/Lighter */
+.mat-calendar-body-disabled>.mat-calendar-body-cell-content {
+  color: #cbd5e1 !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  background-color: transparent !important;
+}
+
+/* Today's Date (if not selected) */
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #3b82f6 !important;
+  color: #3b82f6 !important;
+  background-color: transparent !important;
+}
+
+/* Header Styling */
+.mat-calendar-table-header th {
+  color: #64748b !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+.mat-calendar-header {
+  padding: 0.5rem 0 !important;
+}
+
+.mat-calendar-previous-button,
+.mat-calendar-next-button {
+  color: #64748b !important;
+}
+
+/* 5. REMOVE MDC Default Borders */
+.mdc-notched-outline,
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  display: none !important;
+  border: none !important;
+}
+
+/* 6. Input Infix — flex: 1 so it shares space with the toggle */
+.mat-mdc-form-field-infix {
+  flex: 1 !important;
+  min-width: 0 !important;
+  /* Allow shrinking */
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  border-top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* 7. Datepicker Toggle Icon — compact, no overflow */
+.mat-datepicker-toggle-default-icon {
+  width: 18px !important;
+  height: 18px !important;
+  vertical-align: middle !important;
+}
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 6px !important;
+  flex-shrink: 0 !important;
+  /* Don't squeeze the toggle */
+}
+
+/* Remove bottom spacing reserved for hint/error */
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+// ==========================================
+//    SPA Layout Shell (Centralized)
+// ==========================================
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--color-bg);
+
+  .sidebar-container {
+    height: 100%;
+    position: relative;
+    z-index: 1001;
+    width: 64px; // Slimmer compact width
+    overflow: hidden; // ✂️ ป้องกันเนื้อหาล้นออกตอนยังแคบ
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      width: 260px;
+    }
+  }
+
+  .main-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .content-scroll-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    position: relative;
+
+    // Hide scrollbar but keep functionality
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+  }
+}
+
+// Glassmorphism Overlay — inside .app-shell scope for sibling combinator
+.app-shell {
+  .glass-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  // 🔄 CSS-only: sidebar hover → overlay active (sibling combinator)
+  .sidebar-container:hover~.glass-overlay {
+    opacity: 1;
+  }
+
+  // 🎯 Sidebar text visibility (Global — same specificity for default & hover)
+  .sidebar .link-text {
+    opacity: 0;
+  }
+
+  .sidebar .user-info,
+  .sidebar .logout-text,
+  .sidebar .sidebar-logo-container .minebea-logo,
+  .sidebar .sidebar-logo-container .logo-slogan {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  // 🎯 Sidebar inner <nav> expansion on hover (Global — applies to both production & purchase)
+  .sidebar-container:hover .sidebar {
+    background: rgba(255, 255, 255, 0.92);
+
+    .link-text {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .user-info,
+    .logout-text,
+    .sidebar-logo-container .minebea-logo,
+    .sidebar-logo-container .logo-slogan {
+      opacity: 1;
+    }
+  }
+}
+
+// Hide Sidebar on Login Page Helper
+.hide-sidebar .sidebar-container {
+  display: none !important;
+}
+
+// Global Layout Helpers (for pages to transition)
+.layout {
+  display: block !important;
+  padding: 0 !important;
+  min-height: auto !important;
+}
+
+.content-area {
+  padding: 30px !important;
+  width: 100% !important;
+  max-width: 100%; // Let it fill space
+  margin: 0;
+  box-sizing: border-box;
+}
+
+// Header refinements for SPA
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: -0.5px;
+  }
+}
+/* From Uiverse.io by Nawsome */
+.wheel-and-hamster {
+  --dur: 1s;
+  position: relative;
+  width: 12em;
+  height: 12em;
+  font-size: 14px;
+  margin: 0 auto;
+}
+
+.wheel,
+.hamster,
+.hamster div,
+.spoke {
+  position: absolute;
+}
+
+.wheel,
+.spoke {
+  border-radius: 50%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wheel {
+  background: radial-gradient(100% 100% at center,hsla(0,0%,60%,0) 47.8%,hsl(0,0%,60%) 48%);
+  z-index: 2;
+}
+
+.hamster {
+  animation: hamster var(--dur) ease-in-out infinite;
+  top: 50%;
+  left: calc(50% - 3.5em);
+  width: 7em;
+  height: 3.75em;
+  transform: rotate(4deg) translate(-0.8em,1.85em);
+  transform-origin: 50% 0;
+  z-index: 1;
+}
+
+.hamster__head {
+  animation: hamsterHead var(--dur) ease-in-out infinite;
+  background: hsl(30,90%,55%);
+  border-radius: 70% 30% 0 100% / 40% 25% 25% 60%;
+  box-shadow: 0 -0.25em 0 hsl(30,90%,80%) inset,
+		0.75em -1.55em 0 hsl(30,90%,90%) inset;
+  top: 0;
+  left: -2em;
+  width: 2.75em;
+  height: 2.5em;
+  transform-origin: 100% 50%;
+}
+
+.hamster__ear {
+  animation: hamsterEar var(--dur) ease-in-out infinite;
+  background: hsl(0,90%,85%);
+  border-radius: 50%;
+  box-shadow: -0.25em 0 hsl(30,90%,55%) inset;
+  top: -0.25em;
+  right: -0.25em;
+  width: 0.75em;
+  height: 0.75em;
+  transform-origin: 50% 75%;
+}
+
+.hamster__eye {
+  animation: hamsterEye var(--dur) linear infinite;
+  background-color: hsl(0,0%,0%);
+  border-radius: 50%;
+  top: 0.375em;
+  left: 1.25em;
+  width: 0.5em;
+  height: 0.5em;
+}
+
+.hamster__nose {
+  background: hsl(0,90%,75%);
+  border-radius: 35% 65% 85% 15% / 70% 50% 50% 30%;
+  top: 0.75em;
+  left: 0;
+  width: 0.2em;
+  height: 0.25em;
+}
+
+.hamster__body {
+  animation: hamsterBody var(--dur) ease-in-out infinite;
+  background: hsl(30,90%,90%);
+  border-radius: 50% 30% 50% 30% / 15% 60% 40% 40%;
+  box-shadow: 0.1em 0.75em 0 hsl(30,90%,55%) inset,
+		0.15em -0.5em 0 hsl(30,90%,80%) inset;
+  top: 0.25em;
+  left: 2em;
+  width: 4.5em;
+  height: 3em;
+  transform-origin: 17% 50%;
+  transform-style: preserve-3d;
+}
+
+.hamster__limb--fr,
+.hamster__limb--fl {
+  clip-path: polygon(0 0,100% 0,70% 80%,60% 100%,0% 100%,40% 80%);
+  top: 2em;
+  left: 0.5em;
+  width: 1em;
+  height: 1.5em;
+  transform-origin: 50% 0;
+}
+
+.hamster__limb--fr {
+  animation: hamsterFRLimb var(--dur) linear infinite;
+  background: linear-gradient(hsl(30,90%,80%) 80%,hsl(0,90%,75%) 80%);
+  transform: rotate(15deg) translateZ(-1px);
+}
+
+.hamster__limb--fl {
+  animation: hamsterFLLimb var(--dur) linear infinite;
+  background: linear-gradient(hsl(30,90%,90%) 80%,hsl(0,90%,85%) 80%);
+  transform: rotate(15deg);
+}
+
+.hamster__limb--br,
+.hamster__limb--bl {
+  border-radius: 0.75em 0.75em 0 0;
+  clip-path: polygon(0 0,100% 0,100% 30%,70% 90%,70% 100%,30% 100%,40% 90%,0% 30%);
+  top: 1em;
+  left: 2.8em;
+  width: 1.5em;
+  height: 2.5em;
+  transform-origin: 50% 30%;
+}
+
+.hamster__limb--br {
+  animation: hamsterBRLimb var(--dur) linear infinite;
+  background: linear-gradient(hsl(30,90%,80%) 90%,hsl(0,90%,75%) 90%);
+  transform: rotate(-25deg) translateZ(-1px);
+}
+
+.hamster__limb--bl {
+  animation: hamsterBLLimb var(--dur) linear infinite;
+  background: linear-gradient(hsl(30,90%,90%) 90%,hsl(0,90%,85%) 90%);
+  transform: rotate(-25deg);
+}
+
+.hamster__tail {
+  animation: hamsterTail var(--dur) linear infinite;
+  background: hsl(0,90%,85%);
+  border-radius: 0.25em 50% 50% 0.25em;
+  box-shadow: 0 -0.2em 0 hsl(0,90%,75%) inset;
+  top: 1.5em;
+  right: -0.5em;
+  width: 1em;
+  height: 0.5em;
+  transform: rotate(30deg) translateZ(-1px);
+  transform-origin: 0.25em 0.25em;
+}
+
+.spoke {
+  animation: spoke var(--dur) linear infinite;
+  background: radial-gradient(100% 100% at center,hsl(0,0%,60%) 4.8%,hsla(0,0%,60%,0) 5%),
+		linear-gradient(hsla(0,0%,55%,0) 46.9%,hsl(0,0%,65%) 47% 52.9%,hsla(0,0%,65%,0) 53%) 50% 50% / 99% 99% no-repeat;
+}
+
+/* Animations */
+@keyframes hamster {
+  from, to {
+    transform: rotate(4deg) translate(-0.8em,1.85em);
+  }
+  50% {
+    transform: rotate(0) translate(-0.8em,1.85em);
+  }
+}
+
+@keyframes hamsterHead {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(0);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes hamsterEye {
+  from, 90%, to {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes hamsterEar {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(0);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes hamsterBody {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(0);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes hamsterFRLimb {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(50deg) translateZ(-1px);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(-30deg) translateZ(-1px);
+  }
+}
+
+@keyframes hamsterFLLimb {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(-30deg);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(50deg);
+  }
+}
+
+@keyframes hamsterBRLimb {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(-60deg) translateZ(-1px);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(20deg) translateZ(-1px);
+  }
+}
+
+@keyframes hamsterBLLimb {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(20deg);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(-60deg);
+  }
+}
+
+@keyframes hamsterTail {
+  from, 25%, 50%, 75%, to {
+    transform: rotate(30deg) translateZ(-1px);
+  }
+  12.5%, 37.5%, 62.5%, 87.5% {
+    transform: rotate(10deg) translateZ(-1px);
+  }
+}
+
+@keyframes spoke {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(-1turn);
+  }
+}
+
+.ag-center-aligned-header .ag-header-cell-label { justify-content: center !important; }
+.ag-center-aligned-cell { justify-content: center !important; text-align: center !important; }
+
+/* =========================================================
+   BULLETPROOF AG GRID CHECKBOX OVERRIDE (For modern, clean look)
+   ========================================================= */
+body .ag-theme-quartz.premium-saas-grid {
+  /* 1. Highlight color for selected row */
+  --ag-selected-row-background-color: #eff6ff !important;
+
+  .ag-row {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  /* 2. COMPLETELY HIDE the native HTML checkbox AND AG Grid Icons */
+  input[type="checkbox"],
+  .ag-input-field-input {
+    opacity: 0 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    z-index: -9999 !important;
+  }
+  
+  .ag-checkbox-input-wrapper::after,
+  .ag-checkbox-input-wrapper::before {
+    display: none !important;
+    content: none !important;
+    background-image: none !important;
+  }
+
+  /* 3. DRAW OUR OWN CUSTOM CHECKBOX */
+  .ag-checkbox-input-wrapper {
+    width: 20px !important;
+    height: 20px !important;
+    border: 2px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background-color: white !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    overflow: visible !important;
+  }
+
+  /* 4. Pop Effect & Background when checked */
+  .ag-checkbox-input-wrapper.ag-checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    transform: scale(1.15) !important;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3) !important;
+  }
+
+  /* 5. Draw our own modern checkmark using CSS */
+  .ag-checkbox-input-wrapper.ag-checked {
+    &::after {
+      display: block !important;
+      content: '' !important;
+      position: absolute !important;
+      width: 5px !important;
+      height: 10px !important;
+      border: solid white !important;
+      border-width: 0 2.5px 2.5px 0 !important;
+      transform: rotate(45deg) !important;
+      margin-top: -2px !important;
+      left: 6px !important;
+      top: 2px !important;
+    }
+  }
+}
+
+tr.row-mock-test {
+  background-color: #fff1f2 !important;
+  border-left: 5px solid #ef4444 !important;
+
+  td {
+    color: #991b1b !important;
+    font-weight: 700 !important;
+  }
+}
+
+
+
+
+/* From Uiverse.io by vikramsinghnegi */ 
+.loader {
+  width: fit-content;
+  font-size: 17px;
+  font-family: monospace;
+  line-height: 1.4;
+  font-weight: bold;
+  padding: 30px 2px 50px;
+  color: #333; /* Text color to blend with page */
+  position: relative;
+  overflow: hidden;
+  animation: l10-0 2s infinite cubic-bezier(1, 175, 0.5, 175);
+  transform: scale(1.8);
+}
+.loader::before {
+  content: "Loading";
+  display: inline-block;
+  animation: l10-2 2s infinite;
+}
+.loader::after {
+  content: "";
+  position: absolute;
+  width: 34px;
+  height: 28px;
+  top: 110%;
+  left: calc(50% - 16px);
+  background: linear-gradient(
+        90deg,
+        #0000 12px,
+        #f92033 0 22px,
+        #0000 0 26px,
+        #fdc98d 0 32px,
+        #0000
+      )
+      bottom 26px left 50%,
+    linear-gradient(90deg, #0000 10px, #f92033 0 28px, #fdc98d 0 32px, #0000 0)
+      bottom 24px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 10px,
+        #643700 0 16px,
+        #fdc98d 0 20px,
+        #000 0 22px,
+        #fdc98d 0 24px,
+        #000 0 26px,
+        #f92033 0 32px,
+        #0000 0
+      )
+      bottom 22px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 8px,
+        #643700 0 10px,
+        #fdc98d 0 12px,
+        #643700 0 14px,
+        #fdc98d 0 20px,
+        #000 0 22px,
+        #fdc98d 0 28px,
+        #f92033 0 32px,
+        #0000 0
+      )
+      bottom 20px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 8px,
+        #643700 0 10px,
+        #fdc98d 0 12px,
+        #643700 0 16px,
+        #fdc98d 0 22px,
+        #000 0 24px,
+        #fdc98d 0 30px,
+        #f92033 0 32px,
+        #0000 0
+      )
+      bottom 18px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 8px,
+        #643700 0 12px,
+        #fdc98d 0 20px,
+        #000 0 28px,
+        #f92033 0 30px,
+        #0000 0
+      )
+      bottom 16px left 50%,
+    linear-gradient(90deg, #0000 12px, #fdc98d 0 26px, #f92033 0 30px, #0000 0)
+      bottom 14px left 50%,
+    linear-gradient(
+        90deg,
+        #fdc98d 6px,
+        #f92033 0 14px,
+        #222a87 0 16px,
+        #f92033 0 22px,
+        #222a87 0 24px,
+        #f92033 0 28px,
+        #0000 0 32px,
+        #643700 0
+      )
+      bottom 12px left 50%,
+    linear-gradient(
+        90deg,
+        #fdc98d 6px,
+        #f92033 0 16px,
+        #222a87 0 18px,
+        #f92033 0 24px,
+        #f92033 0 26px,
+        #0000 0 30px,
+        #643700 0
+      )
+      bottom 10px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 10px,
+        #f92033 0 16px,
+        #222a87 0 24px,
+        #feee49 0 26px,
+        #222a87 0 30px,
+        #643700 0
+      )
+      bottom 8px left 50%,
+    linear-gradient(
+        90deg,
+        #0000 12px,
+        #222a87 0 18px,
+        #feee49 0 20px,
+        #222a87 0 30px,
+        #643700 0
+      )
+      bottom 6px left 50%,
+    linear-gradient(90deg, #0000 8px, #643700 0 12px, #222a87 0 30px, #643700 0)
+      bottom 4px left 50%,
+    linear-gradient(90deg, #0000 6px, #643700 0 14px, #222a87 0 26px, #0000 0)
+      bottom 2px left 50%,
+    linear-gradient(90deg, #0000 6px, #643700 0 10px, #0000 0) bottom 0px left
+      50%;
+  background-size: 34px 2.5px;
+  background-repeat: no-repeat;
+  animation: inherit;
+  animation-name: l10-1;
+}
+@keyframes l10-0 {
+  0%,
+  30% {
+    background-position: 0 0px;
+  }
+  50%,
+  100% {
+    background-position: 0 -0.1px;
+  }
+}
+@keyframes l10-1 {
+  50%,
+  100% {
+    top: 109.5%;
+  }
+}
+@keyframes l10-2 {
+  0%,
+  30% {
+    transform: translateY(0);
+  }
+  80%,
+  100% {
+    transform: translateY(-260%);
+  }
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  width: 100%;
+}
+
+.loader-container { display: flex; justify-content: center; align-items: center; min-height: 300px; width: 100%; }
+
+/* Uiverse Checkbox Global */
+.uiverse-checkbox {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  font-size: 14px; /* Reduced from 20px so it fits well in tables */
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  .checkmark {
+    position: relative;
+    top: 0;
+    left: 0;
+    height: 1.6em;
+    width: 1.6em;
+
+    border-radius: 38%;
+
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    border: 1px solid rgba(0, 0, 0, 0.25); /* Adjusted for light background */
+
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.12),
+      0 2px 6px rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.5),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover input:not(:checked) ~ .checkmark {
+    background: rgba(200, 200, 200, 0.2);
+    border-color: rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+    box-shadow:
+      0 12px 24px rgba(0, 0, 0, 0.15),
+      0 4px 8px rgba(0, 0, 0, 0.08),
+      inset 0 1.5px 3px rgba(255, 255, 255, 0.7);
+  }
+
+  input:checked ~ .checkmark {
+    transform: scale(1.22);
+
+    background: linear-gradient(
+      145deg,
+      #21D4FD 0%,
+      #B721FF 100%
+    );
+    border-color: rgba(255, 255, 255, 0.45);
+
+    box-shadow:
+      0 12px 28px rgba(183, 33, 255, 0.35),
+      0 4px 10px rgba(33, 212, 253, 0),
+      inset 0 2px 4px rgba(255, 255, 255, 0.6),
+      inset 0 -2px 6px rgba(255, 255, 255, 0.35);
+  }
+
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    left: 0.53em;
+    top: 0.3em;
+    width: 0.32em;
+    height: 0.64em;
+    border: solid #ffffff;
+    border-width: 0 0.16em 0.16em 0;
+    border-radius: 2px;
+    transform: rotate(45deg) scale(0.3);
+    opacity: 0;
+
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  input:checked ~ .checkmark:after {
+    opacity: 1;
+    transform: rotate(45deg) scale(1);
+  }
+
+  &:active input ~ .checkmark {
+    transform: scale(0.92);
+    transition: transform 0.15s ease-out;
+  }
+}
+
+/* Global selected row color */
+tr.selected-row,
+tr.row-selected {
+  background-color: #e0f2fe !important;
+
+  td {
+    background-color: #e0f2fe !important;
+  }
+}
+
+/* Global Print Settings for A4 Landscape Document Printing */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0 !important;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  #tempDocPrintIframe {
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border: none !important;
+  }
+}

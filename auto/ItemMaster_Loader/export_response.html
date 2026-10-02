@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head id="Head1"><meta http-equiv="X-UA-Compatible" content="IE=edge" /><title>
+	Item Master Report
+</title>
+<script language="javaScript" type="text/javascript" src="../../../crystalreportviewers13/js/crviewer/crv.js"></script>   
+
+<link rel="shortcut icon" href="../../../images/ico/iPbass-ico.ico" />
+<script type="text/javascript" src="../../../jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../js/bootstrap.min.js"></script>      <!-- for ul dropdown list style--> 
+<link href="../../../opc/opencart.css" type="text/css" rel="stylesheet" /><link type="text/css" href="../../../opc/stylesheet.css" rel="stylesheet" media="screen" /><link rel="stylesheet" type="text/css" href="../../../css/style_masterPage.css" />  <!-- master page style --> 
+<link rel="stylesheet" href="../../../jquery/jquery-ui.css" />
+      
+<script>
+    function a_setDailog() {
+        $("#dialog").dialog({
+            autoOpen: false,
+            show: {
+                //effect: "blind",
+                duration: 1000
+            },
+            hide: {
+                effect: "explode",
+                duration: 1000
+            }
+        });
+    }
+    function a_onClick(loc) {
+        document.getElementById('detailframe').src = loc;
+        $("#dialog").dialog("open");
+    }
+    </script>
+
+<style type="text/css">
+/*black-ribbon*/
+.black-ribbon {
+  position: fixed;
+  z-index: 9999;
+  top: 0px;
+  width: 70px;
+}
+@media only all and (min-width: 768px) {
+  .black-ribbon {
+/*    width: auto;*/
+   width: 70px;
+  }
+}
+</style>
+
+ </head>   
+
+<body id="ctl00_Body">
+
+ 
+	  <img src="http://wbp04.bp.minebea.local/iPBASS/images/black-ribbon.png" class="black-ribbon stick-top stick-left"/>
+ 
+
+<!-- for TAB  -->
+<link href="http://wbp04.bp.minebea.local/iPBASS/jquery/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="http://wbp04.bp.minebea.local/iPBASS/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="http://wbp04.bp.minebea.local/iPBASS/jquery/jquery-ui.min.js"></script>
+<!-- for TAB  -->
+
+
+<form method="post" action="./ItemMaster.aspx" id="form1">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/iPBASS/WebResource.axd?d=0kVlWPYewsRCLgcCwa5YMs1gLvLDhHSaaEmbES8v7PI3rLtMrizYtywPRZnGR0Drul3pbaA69kaGk8GLLk0TUm0hd2JvQkEX1skiQ7QhiOY1&amp;t=638901793900000000" type="text/javascript"></script>
+
+
+<script src="/iPBASS/ScriptResource.axd?d=CZolrCmFuZJeYrfKW507CF6CtMnbGSWNwl0gkG5EAWdWCczMgRUq7tMTPvLDWiF_Czfx4XYE9WpsD1Nuq7w9MbhcGiX2dpqOuRu_Wz8QFWlEy-jsuSkxOSI_srRYxby3_APYCzP-CssD8kf2Lj_eRQ2&amp;t=99a6524" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/iPBASS/ScriptResource.axd?d=eoFtltheJUyTFi3_SfnmV-Tg5u09Dxgt83MmFi9soTNoy-Qsb3b4dBAr8WthVI95vA_5cwD_hHw4_oYD7E7Wt9Qkved-4cYN_DCYU2Wh6q94jVDNQLwDaHrF2zBh06UHups5F1uhoddOS9bJ89E-Jg2&amp;t=99a6524" type="text/javascript"></script>
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="AAFD8849" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="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" />
+</div>
+
+
+
+<div id="container">
+	 <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl00$ScriptManager1', 'form1', ['tctl00$ContentPlaceHolder1$UpdatePanel1','ContentPlaceHolder1_UpdatePanel1','tctl00$ContentPlaceHolder1$UpdatePanel2','ContentPlaceHolder1_UpdatePanel2'], ['ctl00$ContentPlaceHolder1$Submit','ContentPlaceHolder1_Submit'], [], 2400, 'ctl00');
+//]]>
+</script>
+
+    
+     <div id="content">
+            <div class="panel panel-default">  
+             
+             
+             <div class="panel-heading">   
+                
+                  <object type="application/x-shockwave-flash"  data="http://wbp04.bp.minebea.local/iPBASS/images/machine.swf"   style="left:305px; width: 100%; position: absolute; top: 0px; height: 116px; display:none;  ">  <param name="quality" value="high" />   <param name="wmode" value="transparent" />  <param name="movie"   value="http://wbp04.bp.minebea.local/iPBASS/images/machine.swf" />  </object> 
+                                  
+                <table id="pageHeader" width="100%" cellpadding="0" cellspacing="0">
+					<tr>
+
+                        
+                        		   	<td align="left" style="height:67px;width:245px;" background = "http://wbp04.bp.minebea.local/iPBASS/images/menu/iPbassReportTHA.jpg" >
+                        
+                                                
+                                            <a href="http://wbp04.bp.minebea.local/iPBASS//THA">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+
+                        </td>
+                       
+                            <td  background = "http://wbp04.bp.minebea.local/iPBASS/images/menu/iPbassBgTHA.gif" align="right">
+                       
+						
+                         <div align="right" >
+                         <img src="http://wbp04.bp.minebea.local/iPBASS/images/menu/MinebeaTHA.gif" alt="Minebea Logo" width="250px"/>
+                         </div>
+                        </td>	
+  					</tr>
+                    </table>
+  
+  <!-- clock menu  place here because Ajax Toolkit can't place before </Head> -->
+
+<!-- clock menu  --> 
+<script type="text/javascript">
+
+    /***********************************************
+
+    * JavaScript Image Clock- by JavaScript Kit (www.javascriptkit.com)
+    * This notice must stay intact for usage
+    * Visit JavaScript Kit at http://www.javascriptkit.com/ for this script and 100s more
+
+    ***********************************************/
+
+    var imageclock = new Object()
+    //Enter path to clock digit images here, in order of 0-9, then "am/pm", then colon image:
+    imageclock.digits = ["c0.gif", "c1.gif", "c2.gif", "c3.gif", "c4.gif", "c5.gif", "c6.gif", "c7.gif", "c8.gif", "c9.gif", "cam.gif", "cpm.gif", "colon.gif"]
+    imageclock.instances = 0
+    var preloadimages = []
+    for (var i = 0; i < imageclock.digits.length; i++) { //preload images
+        preloadimages[i] = new Image()
+        preloadimages[i].src = 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[i]
+    }
+
+    imageclock.imageHTML = function (timestring) { //return timestring (ie: 1:56:38) into string of images instead
+        var sections = timestring.split(":")
+        if (sections[0] == "0") //If hour field is 0 (aka 12 AM)
+            sections[0] = "12"
+        else if (sections[0] >= 13)
+            sections[0] = sections[0] - 12 + ""
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].length == 1)
+                sections[i] = '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[0] + '" />' + '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[parseInt(sections[i])] + '" />'
+            else
+                sections[i] = '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[parseInt(sections[i].charAt(0))] + '" />' + '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[parseInt(sections[i].charAt(1))] + '" />'
+        }
+        return sections[0] + '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[12] + '" />' + sections[1] + '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + imageclock.digits[12] + '" />' + sections[2]
+    }
+
+    imageclock.display = function () {
+        var clockinstance = this
+        this.spanid = "clockspan" + (imageclock.instances++)
+        document.write('<span id="' + this.spanid + '"></span>')
+        this.update()
+        setInterval(function () { clockinstance.update() }, 1000)
+    }
+
+    imageclock.display.prototype.update = function () {
+        var dateobj = new Date()
+        var currenttime = dateobj.getHours() + ":" + dateobj.getMinutes() + ":" + dateobj.getSeconds() //create time string
+        var currenttimeHTML = imageclock.imageHTML(currenttime) + '<img src="' + 'http://wbp04.bp.minebea.local/iPBASS/images/clock/' + ((dateobj.getHours() >= 12) ? imageclock.digits[11] : imageclock.digits[10]) + '" />'
+        document.getElementById(this.spanid).innerHTML = currenttimeHTML
+
+    }
+</script>
+  
+             
+
+           
+                 <table width="100%" cellspacing="0" cellpadding="0" border="0" >	
+			<tr><td> 
+                               
+			  <table width="100%" cellspacing="0" cellpadding="0" border="0"  id="moduleList" >
+            <tr>
+            <td width="60px" nowrap="nowrap" align="left"   ><a class="navLink" href="http://wbp04.bp.minebea.local/iPBASS/Logout/Logout.aspx?urlBeforeLogin=/iPBASS/app/Master/ItemMaster/ItemMaster.aspx"><font color="#F0E68C" size="1px">&nbsp;&nbsp;&nbsp;log out</font></a></td>
+	            <td align="left" style="height: 23px;"  >
+	    		    <a class="navLink" href="#"><span id="lblModuleName">Item Master Report</span></a>
+		        </td>
+                 <td align="right" colspan="1" style="height:19px; text-align:right;" valign="middle" nowrap="nowrap"   >
+                    <span id="lblWelcome" style="color:White;font-family:Tahoma;font-size:8pt;">Welcome : wannakarn mangkorn            ( A31BP) </span>  &nbsp;&nbsp;&nbsp;
+                     <span id="lblTime" style="color:White;font-family:Tahoma;font-size:8pt;">Date: 01 July 2026</span> &nbsp;&nbsp;&nbsp;
+                                        </td>        
+                 <td align="right" colspan="1" style="height:19px;width:140px;background-color:#000000;"  
+                       valign="middle" nowrap="nowrap"> 
+                        <script type="text/javascript">
+                            new imageclock.display()
+                        </script>
+                </td>
+            </tr>
+        </table>
+			</td></tr>
+            </table>       
+              
+                <div class="pull-left"></div>
+                <div class="pull-right"> </div>
+                
+            </div>
+                    
+             <div class="panel-body">
+           <div class="table-responsive">
+               <table class="table table-bordered table-hover">
+               <tbody>
+                     <tr><td valign="top" style="height: 100%" >
+                        
+
+
+    <link rel="stylesheet" href="../../../css/GridviewScroll.css" />
+    <link rel="stylesheet" href="../../../css/style_common.css" />
+    <link rel="stylesheet" href="../../../css/GridPager.css" />
+
+
+
+    <div id="ContentPlaceHolder1_UpdateProgress1" style="display:none;">
+	
+            <img id="ContentPlaceHolder1_Image1" src="../../../images/ajax-loader-barCircle.gif" style="height:40px;width:48px;z-index: 102; left: 47%; position: absolute; top: 390px" />
+        
+</div>
+
+
+
+    <div id="ContentPlaceHolder1_UpdatePanel1">
+	
+            <table width="100%" bgcolor="#E3EAEB" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td bgcolor="#e3eaeb">
+                        <table style="font-size: 9pt; font-family: Tahoma; width: 1250px;" id="TABLE1" cellspacing="0" cellpadding="0" border="0">
+                            <tbody>
+
+                                <tr>
+                                    <td style="font-weight: bold; color: black; height: 10px" bgcolor="#e3eaeb" colspan="10"></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold; color: black; width: 101px;" align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">&nbsp;
+        <span id="ContentPlaceHolder1_Label3" style="display:inline-block;font-family:Verdana;font-size:8pt;width:80px;">Section  :</span>
+                                        </span>
+                                    </td>
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma; width: 120px;"
+                                        bgcolor="#e3eaeb">&nbsp;
+                                        <select name="ctl00$ContentPlaceHolder1$ddlSection" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$ddlSection\&#39;,\&#39;\&#39;)&#39;, 0)" id="ContentPlaceHolder1_ddlSection" class="ddl" style="width:70px;">
+		<option value="T271DZ">71DZ</option>
+		<option selected="selected" value="T27122">7122</option>
+
+	</select>
+                                    </td>
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma" bgcolor="#e3eaeb" colspan="2">
+                                        <table>
+                                            <tr>
+                                                <td style="font-weight: bold; color: black; width: 89px">
+                                                    <span style="font-size: 8pt; font-family: Verdana; color: black;">&nbsp;Dept Code&nbsp; :  </span>
+                                                </td>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtDept" type="text" maxlength="2" id="ContentPlaceHolder1_txtDept" class="txt" style="width:60px;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma" bgcolor="#e3eaeb" colspan="2">
+                                        <table>
+                                            <tr>
+                                                <td style="font-weight: bold; color: black; width: 83px;">
+                                                    <span style="font-size: 8pt; font-family: Verdana">Item Type&nbsp; :</span>
+                                                </td>
+                                                <td>
+                                                    <table id="ContentPlaceHolder1_RdoItemType" class="rdo" style="width:200px;">
+		<tr>
+			<td><input id="ContentPlaceHolder1_RdoItemType_0" type="radio" name="ctl00$ContentPlaceHolder1$RdoItemType" value="M" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoItemType$0\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoItemType_0">Master</label></td><td><input id="ContentPlaceHolder1_RdoItemType_1" type="radio" name="ctl00$ContentPlaceHolder1$RdoItemType" value="P" checked="checked" /><label for="ContentPlaceHolder1_RdoItemType_1">Pur</label></td><td><input id="ContentPlaceHolder1_RdoItemType_2" type="radio" name="ctl00$ContentPlaceHolder1$RdoItemType" value="W" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoItemType$2\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoItemType_2">WIP</label></td><td><input id="ContentPlaceHolder1_RdoItemType_3" type="radio" name="ctl00$ContentPlaceHolder1$RdoItemType" value="F" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoItemType$3\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoItemType_3">F/G</label></td>
+		</tr>
+	</table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="font-weight: bold; color: black; width: 101px;" align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">
+                                            <span id="ContentPlaceHolder1_Label4" style="display:inline-block;font-family:Verdana;font-size:8pt;width:90px;">Item Type :</span>
+                                        </span>
+                                    </td>
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma" bgcolor="#e3eaeb"
+                                        colspan="3">
+                                        <table id="ContentPlaceHolder1_RboStockType" class="rdo" style="width:210px;">
+		<tr>
+			<td><input id="ContentPlaceHolder1_RboStockType_0" type="radio" name="ctl00$ContentPlaceHolder1$RboStockType" value="0" checked="checked" /><label for="ContentPlaceHolder1_RboStockType_0">*All</label></td><td><input id="ContentPlaceHolder1_RboStockType_1" type="radio" name="ctl00$ContentPlaceHolder1$RboStockType" value="1" /><label for="ContentPlaceHolder1_RboStockType_1">Stock</label></td><td><input id="ContentPlaceHolder1_RboStockType_2" type="radio" name="ctl00$ContentPlaceHolder1$RboStockType" value="2" /><label for="ContentPlaceHolder1_RboStockType_2">Non-Stock</label></td>
+		</tr>
+	</table>
+                                    </td>
+
+                                </tr>
+                                <tr>
+
+                                    <td style="font-weight: bold; color: black; width: 101px;" align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">&nbsp;
+        <span id="ContentPlaceHolder1_Label2" style="display:inline-block;font-family:Verdana;font-size:8pt;width:76px;">Item No.  :</span>
+                                        </span>
+                                    </td>
+
+                                    <td style="font-size: 8pt; color: black" bgcolor="#e3eaeb" colspan="3">
+
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtFrItem" type="text" value="4601" maxlength="15" id="ContentPlaceHolder1_txtFrItem" class="txt" style="width:120px;" />
+
+                                                </td>
+                                                <td style="color: black">
+                                                    <strong><span style="font-family: Verdana">To&nbsp;:</span></strong>
+                                                </td>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtToItem" type="text" value="4601xx" maxlength="15" id="ContentPlaceHolder1_txtToItem" class="txt" style="width:120px;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+
+
+                                    </td>
+                                    <td style="font-size: 8pt; color: black; font-family: Tahoma;"
+                                        bgcolor="#e3eaeb" colspan="2">Blank for *All, Item From=AS-42 for Like AS-42* 
+                                    </td>
+
+                                    <td style="font-weight: bold; color: black; width: 101px;" align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">
+                                            <span id="ContentPlaceHolder1_Label5" style="display:inline-block;font-family:Verdana;font-size:8pt;width:90px;">Mat'L Type :</span>
+                                        </span>
+                                    </td>
+                                    <td style="color: black; width: 279px;" bgcolor="#e3eaeb" colspan="3">
+                                        <span style="font-size: 8pt; font-family: Verdana">
+
+                                            <table id="ContentPlaceHolder1_RdodirectIndirect" class="rdo" style="width:200px;">
+		<tr>
+			<td><input id="ContentPlaceHolder1_RdodirectIndirect_0" type="radio" name="ctl00$ContentPlaceHolder1$RdodirectIndirect" value="0" checked="checked" /><label for="ContentPlaceHolder1_RdodirectIndirect_0">*All</label></td><td><input id="ContentPlaceHolder1_RdodirectIndirect_1" type="radio" name="ctl00$ContentPlaceHolder1$RdodirectIndirect" value="1" /><label for="ContentPlaceHolder1_RdodirectIndirect_1">Indirect</label></td><td><input id="ContentPlaceHolder1_RdodirectIndirect_2" type="radio" name="ctl00$ContentPlaceHolder1$RdodirectIndirect" value="2" /><label for="ContentPlaceHolder1_RdodirectIndirect_2">Direct</label></td>
+		</tr>
+	</table>
+
+                                        </span>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td style="font-weight: bold; color: black; width: 101px;"
+                                        align="left" bgcolor="#e3eaeb"><span style="font-size: 8pt; font-family: Verdana">&nbsp;
+        <span id="ContentPlaceHolder1_Label1" style="display:inline-block;font-family:Verdana;font-size:8pt;width:76px;">A/C Code  :</span>
+                                        </span>
+                                    </td>
+
+                                    <td style="color: black;" align="left" bgcolor="#e3eaeb" colspan="3">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtFrAC" type="text" maxlength="6" id="ContentPlaceHolder1_txtFrAC" class="txt" style="width:120px;" />
+                                                </td>
+                                                <td style="color: black; width: 31px;">
+                                                    <strong><span style="font-family: Verdana">To&nbsp;:</span></strong>
+                                                </td>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtToAC" type="text" maxlength="6" id="ContentPlaceHolder1_txtToAC" class="txt" style="width:120px;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma;" bgcolor="#e3eaeb" colspan="2">
+                                        <span style="color: black">
+                                            <span style="font-size: 8pt">Blank for *All, A/C From= 450 for Like 450*
+                                            </span></span>
+                                    </td>
+
+                                    <td style="font-weight: bold; color: black; width: 101px;" align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">
+                                            <span id="ContentPlaceHolder1_Label6" style="display:inline-block;font-family:Verdana;font-size:8pt;width:90px;">Last Update :</span>
+                                        </span>
+                                    </td>
+                                    <td style="color: black; width: 279px;" bgcolor="#e3eaeb" colspan="3">
+
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <table id="ContentPlaceHolder1_RdoPeriod" class="rdo" style="width:490px;">
+		<tr>
+			<td><input id="ContentPlaceHolder1_RdoPeriod_0" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="A" checked="checked" /><label for="ContentPlaceHolder1_RdoPeriod_0">*ALL</label></td><td><input id="ContentPlaceHolder1_RdoPeriod_1" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="0" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoPeriod$1\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoPeriod_1">1-3 Month</label></td><td><input id="ContentPlaceHolder1_RdoPeriod_2" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="1" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoPeriod$2\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoPeriod_2">3-6 Month</label></td><td><input id="ContentPlaceHolder1_RdoPeriod_3" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="2" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoPeriod$3\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoPeriod_3">6-12 Month</label></td><td><input id="ContentPlaceHolder1_RdoPeriod_4" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="3" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoPeriod$4\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoPeriod_4">1-12 Month</label></td><td><input id="ContentPlaceHolder1_RdoPeriod_5" type="radio" name="ctl00$ContentPlaceHolder1$RdoPeriod" value="4" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$RdoPeriod$5\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_RdoPeriod_5">> 1 Year</label></td>
+		</tr>
+	</table>
+                                                </td>
+                                                <td>
+                                                    <select name="ctl00$ContentPlaceHolder1$ddlYear" id="ContentPlaceHolder1_ddlYear" disabled="disabled" class="aspNetDisabled ddl" style="width:60px;">
+		<option selected="selected" value="2025">2025</option>
+		<option value="2024">2024</option>
+		<option value="2023">2023</option>
+		<option value="2022">2022</option>
+		<option value="2021">2021</option>
+		<option value="2020">2020</option>
+		<option value="2019">2019</option>
+		<option value="2018">2018</option>
+		<option value="2017">2017</option>
+		<option value="2016">2016</option>
+		<option value="2015">2015</option>
+		<option value="2014">2014</option>
+		<option value="2013">2013</option>
+		<option value="2012">2012</option>
+		<option value="2011">2011</option>
+		<option value="2010">2010</option>
+		<option value="2009">2009</option>
+		<option value="2008">2008</option>
+		<option value="2007">2007</option>
+		<option value="2006">2006</option>
+		<option value="2005">2005</option>
+		<option value="2004">2004</option>
+		<option value="2003">2003</option>
+		<option value="2002">2002</option>
+		<option value="2001">2001</option>
+		<option value="2000">2000</option>
+		<option value="1999">1999</option>
+		<option value="1998">1998</option>
+		<option value="1997">1997</option>
+		<option value="1996">1996</option>
+		<option value="1995">1995</option>
+		<option value="1993">1993</option>
+
+	</select>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td style="font-weight: bold; color: black; width: 101px;"
+                                        align="left" bgcolor="#e3eaeb">
+                                        <span style="font-size: 8pt; font-family: Verdana">&nbsp;
+        <span id="ContentPlaceHolder1_lblVendor" style="display:inline-block;font-family:Verdana;font-size:8pt;width:76px;">Vendor :</span>
+                                        </span>
+                                    </td>
+
+                                    <td style="color: black;" align="left" bgcolor="#e3eaeb" colspan="3">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtFrVendor" type="text" maxlength="10" id="ContentPlaceHolder1_txtFrVendor" class="txt" style="width:120px;" />
+                                                </td>
+                                                <td style="color: black">
+                                                    <strong><span style="font-family: Verdana">To&nbsp;:</span></strong>
+                                                </td>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtToVendor" type="text" maxlength="10" id="ContentPlaceHolder1_txtToVendor" class="txt" style="width:120px;" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td style="font-size: 9pt; color: black; font-family: Tahoma;" bgcolor="#e3eaeb" colspan="2"><span style="color: black">
+                                        <span style="font-size: 8pt">Blank for *All, </span><span>
+                                            <span id="ContentPlaceHolder1_lblvendor2" style="display:inline-block;font-family:Tahoma;font-size:8pt;width:45px;">Vendor</span><span style="font-size: 8pt">&nbsp; From= 222 for Like 222*</span></span><span style="color: #ff0066"></span></span>
+                                    </td>
+
+
+                                    <td style="font-weight: bold; color: black; width: 101px;"
+                                        bgcolor="#e3eaeb">
+                                        <span id="ContentPlaceHolder1_Label7" style="font-family:Verdana;font-size:8pt;">W/C Code :</span>
+                                    </td>
+                                    <td style="color: black;" bgcolor="#e3eaeb" colspan="3">
+
+                                        <table>
+                                            <tr>
+                                                <td style="width: 85px">
+                                                    <input name="ctl00$ContentPlaceHolder1$txtbWccd" type="text" id="ContentPlaceHolder1_txtbWccd" class="txt" style="width:65px;" />
+                                                </td>
+                                                <td style="font-weight: bold; color: black; width: 97px;">
+                                                    <span id="ContentPlaceHolder1_Label8" style="font-family:Verdana;font-size:8pt;">Orgn Code :</span>
+                                                </td>
+                                                <td>
+                                                    <input name="ctl00$ContentPlaceHolder1$txtOrgn" type="text" id="ContentPlaceHolder1_txtOrgn" class="txt" style="width:65px;" />
+                                                </td>
+                                                <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                <td>
+                                                    <span class="chk" style="display:inline-block;width:250px;"><input id="ContentPlaceHolder1_chkSuspend" type="checkbox" name="ctl00$ContentPlaceHolder1$chkSuspend" /><label for="ContentPlaceHolder1_chkSuspend">inclued suspend item</label></span>
+                                                </td>
+                                            </tr>
+
+                                        </table>
+
+
+                                    </td>
+
+
+                                </tr>
+
+                                <tr>
+
+                                    <td style="font-weight: bold; color: black;" align="left" bgcolor="#e3eaeb" colspan="4">
+                                        <table>
+                                            <tr>
+                                                <td style="width: 17px">
+                                                    <span style="display:inline-block;width:20px;"><input id="ContentPlaceHolder1_CheECNDate" type="checkbox" name="ctl00$ContentPlaceHolder1$CheECNDate" onclick="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ContentPlaceHolder1$CheECNDate\&#39;,\&#39;\&#39;)&#39;, 0)" /><label for="ContentPlaceHolder1_CheECNDate"> </label></span>
+                                                </td>
+
+                                                <td style="color: black; width: 132px">
+                                                    <span style="font-size: 8pt; font-family: Verdana">E.C.N.(Year/Month)</span>
+                                                </td>
+                                                <td style="width: 143px" colspan="2">
+                                                    <table>
+                                                        <tr>
+                                                            <td>
+                                                                <select name="ctl00$ContentPlaceHolder1$ddlDlyYear" id="ContentPlaceHolder1_ddlDlyYear" disabled="disabled" class="aspNetDisabled ddl" style="width:70px;">
+		<option value="2017">2017</option>
+		<option value="2018">2018</option>
+		<option value="2019">2019</option>
+		<option value="2020">2020</option>
+		<option value="2021">2021</option>
+		<option value="2022">2022</option>
+		<option value="2023">2023</option>
+		<option value="2024">2024</option>
+		<option value="2025">2025</option>
+		<option selected="selected" value="2026">2026</option>
+		<option value="2027">2027</option>
+
+	</select></td>
+                                                            <td>/</td>
+                                                            <td>
+                                                                <select name="ctl00$ContentPlaceHolder1$ddlDlyMonth" id="ContentPlaceHolder1_ddlDlyMonth" disabled="disabled" class="aspNetDisabled ddl" style="width:50px;">
+		<option value="01">01</option>
+		<option value="02">02</option>
+		<option value="03">03</option>
+		<option value="04">04</option>
+		<option value="05">05</option>
+		<option value="06">06</option>
+		<option selected="selected" value="07">07</option>
+		<option value="08">08</option>
+		<option value="09">09</option>
+		<option value="10">10</option>
+		<option value="11">11</option>
+		<option value="12">12</option>
+
+	</select>
+
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+
+
+                                            </tr>
+                                        </table>
+
+                                    </td>
+
+
+                                    <td style="color: black;" align="left" bgcolor="#E7EBEF" colspan="3">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <span style="display:inline-block;color:Black;font-weight:normal;width:145px;"><input id="ContentPlaceHolder1_CheOnHand" type="checkbox" name="ctl00$ContentPlaceHolder1$CheOnHand" /><label for="ContentPlaceHolder1_CheOnHand">Show On Hand<>0.</label></span>
+                                                </td>
+                                                <td>
+                                                    <span style="display:inline-block;color:Black;font-weight:normal;width:210px;"><input id="ContentPlaceHolder1_chkUsage" type="checkbox" name="ctl00$ContentPlaceHolder1$chkUsage" /><label for="ContentPlaceHolder1_chkUsage">Check Usage(Parents/Component)</label></span>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+
+
+                                    <td style="width: 102px; color: black; height: 30px" bgcolor="#e3eaeb" colspan="3">
+                                        <div id="ContentPlaceHolder1_UpdatePanel2">
+		
+                                                <table style="width: 153px">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td align="left">
+                                                                <input type="submit" name="ctl00$ContentPlaceHolder1$Submit" value="Select" id="ContentPlaceHolder1_Submit" class="btn_blue" style="height:30px;" />
+                                                            </td>
+                                                            <td align="left">
+                                                                <input type="submit" name="ctl00$ContentPlaceHolder1$Clear" value="Clear" id="ContentPlaceHolder1_Clear" class="btn_red" style="height:30px;" />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            
+	</div>
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+
+            <table bgcolor="#E3EAEB" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            &nbsp;
+
+                            &nbsp;
+
+                            
+
+                            <span id="ContentPlaceHolder1_lblDataError" style="font-family:Verdana;font-size:8pt;font-weight:normal;"></span>
+
+
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            
+
+                            
+                            
+                            
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        
+</div>
+
+        	        </td>
+	            </tr>
+             </tbody>
+            </table>
+        		
+		    </div>
+      </div>	
+       </div> 				
+      <div id="footer">Copyright 2015 © iPBASS IT NMB Minebea Thai.</div>	
+
+	</div>
+
+</div>
+         
+
+
+<script type="text/javascript">
+//<![CDATA[
+Sys.Application.add_init(function() {
+    $create(Sys.UI._UpdateProgress, {"associatedUpdatePanelId":"ContentPlaceHolder1_UpdatePanel2","displayAfter":500,"dynamicLayout":true}, null, null, $get("ContentPlaceHolder1_UpdateProgress1"));
+});
+//]]>
+</script>
+</form>
+     
+</body>
+</html>
+

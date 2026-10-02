@@ -1,0 +1,663 @@
+<!-- Backdrop -->
+<div *ngIf="isOpen" class="inbox-backdrop" (click)="closeModal()">
+
+  <!-- Container -->
+  <div class="inbox-container" (click)="stopPropagation($event)">
+
+    <!-- ═══ Header ═══ -->
+    <div class="inbox-header">
+      <div class="header-left">
+        <h2 class="header-title">Notifications</h2>
+        <span class="unread-badge" *ngIf="(filteredUnreadCount$ | async) as count">
+          {{ count }} Unread
+        </span>
+      </div>
+      <div class="header-right-actions">
+        <!-- Global Language Toggle -->
+        <div class="lang-toggle">
+          <button [class.active]="lang === 'EN'" (click)="lang = 'EN'">EN</button>
+          <button [class.active]="lang === 'TH'" (click)="lang = 'TH'">TH</button>
+        </div>
+        <button (click)="closeModal()" class="close-btn" title="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ Toolbar / Filters ═══ -->
+    <div class="inbox-toolbar">
+      <div class="filter-group">
+        <button [class]="view === 'inbox' && filter === 2 ? 'filter-btn active' : 'filter-btn inactive'"
+          (click)="switchToInbox(); setFilter(2)">
+          <span class="mute-toggle" (click)="toggleMute(2, $event)" title="Toggle PMC Notifications"
+            [class.muted]="mutedDivision === 2">
+            <i class="bi" [class.bi-bell-slash-fill]="mutedDivision === 2"
+              [class.bi-bell-fill]="mutedDivision !== 2"></i>
+          </span>
+          <span class="tab-label">PMC</span>
+          <span class="tab-badge" *ngIf="(pmcUnreadCount$ | async) as pmcCount">{{ pmcCount }}</span>
+        </button>
+
+        <button [class]="view === 'inbox' && filter === 3 ? 'filter-btn active' : 'filter-btn inactive'"
+          (click)="switchToInbox(); setFilter(3)">
+          <span class="mute-toggle" (click)="toggleMute(3, $event)" title="Toggle GM Notifications"
+            [class.muted]="mutedDivision === 3">
+            <i class="bi" [class.bi-bell-slash-fill]="mutedDivision === 3"
+              [class.bi-bell-fill]="mutedDivision !== 3"></i>
+          </span>
+          <span class="tab-label">GM</span>
+          <span class="tab-badge" *ngIf="(gmUnreadCount$ | async) as gmCount">{{ gmCount }}</span>
+        </button>
+        <button [class]="view === 'trash' ? 'filter-btn trash-tab active' : 'filter-btn trash-tab inactive'"
+          (click)="switchToTrash()" title="Trash">
+          <i class="bi bi-trash3"></i> {{ filter === 2 ? 'PMC' : 'GM' }} Trash
+        </button>
+      </div>
+      <div class="toolbar-actions">
+        <button (click)="markAllAsRead()" class="mark-all-btn" *ngIf="view === 'inbox'">
+          <i class="bi bi-check-all"></i> Mark all as read
+        </button>
+        <!-- Delete Selected Button (replaces old delete-all-read) -->
+        <button (click)="deleteSelected()" class="delete-selected-btn" *ngIf="view === 'inbox'"
+          [disabled]="selectedIds.size === 0" title="{{ lang === 'TH' ? 'ลบรายการที่เลือก' : 'Delete Selected' }}">
+          <i class="bi bi-trash3"></i>
+          <span *ngIf="selectedIds.size > 0" class="selected-count">{{ selectedIds.size }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ INBOX View ═══ -->
+    <div class="inbox-list-body" *ngIf="view === 'inbox'">
+      <!-- Safe Loading State Gate -->
+      <ng-container *ngIf="isLoading$ | async; else inboxDataState">
+        <div class="inbox-loading-state">
+          <div class="loading-pulse-ring"></div>
+          <div class="loading-text">รอโหลดข้อมูลสักครู่ครับ</div>
+        </div>
+      </ng-container>
+
+      <!-- Render Data Only When Loaded -->
+      <ng-template #inboxDataState>
+        <!-- Select All Bar -->
+        <div class="select-all-bar" *ngIf="(filteredNotifications$ | async)?.length">
+          <label class="select-all-label" (click)="toggleSelectAll($event)">
+            <span class="custom-checkbox" [class.checked]="isAllSelected()" [class.indeterminate]="isIndeterminate()">
+              <i class="bi"
+                [ngClass]="isAllSelected() ? 'bi-check-square-fill' : isIndeterminate() ? 'bi-dash-square-fill' : 'bi-square'"></i>
+            </span>
+            <span class="select-all-text">{{ lang === 'EN' ? 'Select All' : 'เลือกทั้งหมด' }}</span>
+          </label>
+          <span class="selection-info" *ngIf="selectedIds.size > 0">
+            {{ selectedIds.size }} {{ lang === 'EN' ? 'selected' : 'รายการ' }}
+          </span>
+        </div>
+
+        <ul class="notification-list" *ngIf="(filteredNotifications$ | async)?.length; else emptyState">
+          <li *ngFor="let item of filteredNotifications$ | async; trackBy: trackByNotificationId"
+            class="notification-item"
+            [ngClass]="{ 'unread': !item.IsRead, 'read': item.IsRead, 'expanded': isExpanded(item), 'selected-item': isSelected(item), 'is-complete': isAllDivisionsDone(item) }">
+
+            <!-- Row Header (always visible, clickable) -->
+            <div class="row-header" (click)="toggleExpand(item)">
+              <!-- Selection Checkbox -->
+              <div class="item-checkbox" (click)="toggleSelection(item, $event)">
+                <span class="custom-checkbox" [class.checked]="isSelected(item)">
+                  <i class="bi" [ngClass]="isSelected(item) ? 'bi-check-square-fill' : 'bi-square'"></i>
+                </span>
+              </div>
+
+              <!-- Icon -->
+              <div class="icon-circle" [style.background-color]="getBadgeColor(item) + '15'"
+                [style.color]="getBadgeColor(item)">
+                <i class="bi" [ngClass]="getIconClass(item)"></i>
+              </div>
+
+              <!-- Content -->
+              <div class="row-content">
+                <div class="row-top">
+                  <h3 class="row-title">{{ getEventLabel(item) }}</h3>
+                  <span class="row-doc" *ngIf="item.Doc_No">{{ item.Doc_No }}</span>
+                </div>
+                <p class="row-preview">{{ getSubject(item) }}</p>
+              </div>
+
+              <!-- Right -->
+              <div class="row-right">
+                <span class="timestamp">{{ formatDate(item.Created_At) }}</span>
+                <div class="unread-dot" *ngIf="!item.IsRead"></div>
+              </div>
+
+              <!-- Chevron -->
+              <i class="bi chevron" [ngClass]="isExpanded(item) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+            </div>
+
+            <!-- Accordion Detail (expands below) -->
+            <div class="accordion-body" [class.open]="isExpanded(item)">
+
+              <!-- POINTER ARCHITECTURE: Loading Spinner -->
+              <div class="lazy-loading-spinner" *ngIf="loadingMap.get(item.Notification_ID!)">
+                <div class="spinner-content">
+                  <i class="bi bi-arrow-repeat animate-spin"></i>
+                  <span>{{ lang === 'TH' ? 'กำลังโหลดข้อมูล...' : 'Loading details...' }}</span>
+                </div>
+              </div>
+
+              <div class="detail-inner" *ngIf="!loadingMap.get(item.Notification_ID!)">
+
+                <!-- ═══ Division Status Panel ═══ -->
+                <!-- Only shown for plan-related events; REQUEST/RETURN (PD/PH flows) do NOT have turn status -->
+                <div class="division-status-panel"
+                  *ngIf="['NEW_PLAN','PLAN_REVISION','CANCEL_PLAN','UPDATE_PLAN'].includes(item.Event_Type)"
+                  [class.all-divisions-done]="isAllDivisionsDone(item)">
+
+                  <!-- All Complete Banner -->
+                  <div class="all-complete-banner" *ngIf="isAllDivisionsDone(item)">
+                    <i class="bi bi-patch-check-fill"></i>
+                    {{ lang === 'EN' ? 'All Divisions Complete' : 'ทุกแผนกเสร็จสิ้น' }}
+                  </div>
+
+                  <h4 class="status-panel-title">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    {{ lang === 'EN' ? 'Division Status' : 'สถานะแผนก' }}
+                  </h4>
+                  <div class="status-chips-grid">
+                    <!-- PC (Assign) — Priority 1 -->
+                    <div class="status-chip" [ngClass]="getDivisionStatusClass(item, 'PC')">
+                      <div class="status-chip-icon">
+                        <i class="bi" [ngClass]="getDivisionStatusIcon(item, 'PC')"></i>
+                      </div>
+                      <div class="status-chip-info">
+                        <span class="status-chip-dept">PC</span>
+                        <span class="status-chip-action">{{ getDivisionStatusLabel(item, 'PC')
+                          }}</span>
+                      </div>
+                      <span class="status-chip-badge" [ngClass]="getDivisionStatusClass(item, 'PC')">
+                        {{ getDivisionStatusText(item, 'PC') }}
+                      </span>
+                    </div>
+
+                    <!-- EN (Drawing/Layout) — Priority 2 -->
+                    <div class="status-chip" [ngClass]="getDivisionStatusClass(item, 'EN')">
+                      <div class="status-chip-icon">
+                        <i class="bi" [ngClass]="getDivisionStatusIcon(item, 'EN')"></i>
+                      </div>
+                      <div class="status-chip-info">
+                        <span class="status-chip-dept">EN</span>
+                        <span class="status-chip-action">{{ getDivisionStatusLabel(item, 'EN')
+                          }}</span>
+                      </div>
+                      <span class="status-chip-badge" [ngClass]="getDivisionStatusClass(item, 'EN')">
+                        {{ getDivisionStatusText(item, 'EN') }}
+                      </span>
+                    </div>
+
+                    <!-- QC (IIQC) — Priority 3 -->
+                    <div class="status-chip" [ngClass]="getDivisionStatusClass(item, 'QC')">
+                      <div class="status-chip-icon">
+                        <i class="bi" [ngClass]="getDivisionStatusIcon(item, 'QC')"></i>
+                      </div>
+                      <div class="status-chip-info">
+                        <span class="status-chip-dept">QC</span>
+                        <span class="status-chip-action">{{ getDivisionStatusLabel(item, 'QC')
+                          }}</span>
+                      </div>
+                      <span class="status-chip-badge" [ngClass]="getDivisionStatusClass(item, 'QC')">
+                        {{ getDivisionStatusText(item, 'QC') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Metadata -->
+                <div class="detail-meta">
+                  <div class="meta-chip">
+                    <span class="meta-label">From</span>
+                    <span class="meta-value">{{ item.Action_By || 'System' }}</span>
+                  </div>
+                  <div class="meta-chip">
+                    <span class="meta-label">Date</span>
+                    <span class="meta-value">{{ formatDate(item.Created_At) }}</span>
+                  </div>
+                  <div class="meta-chip">
+                    <span class="meta-label">Type</span>
+                    <span class="event-badge" [style.background-color]="getBadgeColor(item) + '15'"
+                      [style.color]="getBadgeColor(item)">
+                      {{ getEventLabel(item) }}
+                    </span>
+                  </div>
+                  <div class="meta-chip"
+                    *ngIf="getMetaValue(item, 'PlanDate') && item.Event_Type !== 'NEW_PLAN' && item.Event_Type !== 'CANCEL_PLAN' && getDetailItems(item).length === 0">
+                    <span class="meta-label">{{ lang === 'EN' ? 'Plan Date' :
+                      'Plan Date' }}</span>
+                    <span class="meta-value mono">{{ getMetaValue(item, 'PlanDate') }}</span>
+                  </div>
+                  <!-- Division chip (shown for all types) -->
+                  <div class="meta-chip" *ngIf="getNotificationDivision(item) !== 'UNKNOWN'">
+                    <span class="meta-label">{{ lang === 'EN' ? 'Division' : 'Division' }}</span>
+                    <span class="meta-value">{{ getNotificationDivision(item) }}</span>
+                  </div>
+                  <!-- Div > Fac chip (hidden for CANCEL_PLAN and PLAN_REVISION) -->
+                  <div class="meta-chip"
+                    *ngIf="(getMetaValue(item, 'Division') || getMetaValue(item, 'Facility')) && item.Event_Type !== 'CANCEL_PLAN' && item.Event_Type !== 'PLAN_REVISION'">
+                    <span class="meta-label">{{ lang === 'EN' ? 'Div > Fac' : 'Div > Fac'
+                      }}</span>
+                    <span class="meta-value">
+                      <ng-container *ngIf="getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                        {{ getMetaValue(item, 'Division') }} > {{ getMetaValue(item, 'Facility')
+                        }}
+                      </ng-container>
+                      <ng-container *ngIf="getMetaValue(item, 'Division') && !getMetaValue(item, 'Facility')">
+                        {{ getMetaValue(item, 'Division') }}
+                      </ng-container>
+                      <ng-container *ngIf="!getMetaValue(item, 'Division') && getMetaValue(item, 'Facility')">
+                        {{ getMetaValue(item, 'Facility') }}
+                      </ng-container>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Message Body -->
+                <div class="detail-body" [innerHTML]="getBody(item)"></div>
+
+                <!-- ═══ Dynamic Details Section ═══ -->
+                <ng-container *ngIf="hasDetails(item)">
+
+                  <!-- REVISION: Before & After Changes Table OR Items Grid -->
+                  <ng-container *ngIf="getDetailType(item) === 'revision'">
+                    <!-- 1. FIELD LEVEL CHANGES (Single Edit) -->
+                    <div class="details-section" *ngIf="getDetailChanges(item).length > 0">
+                      <h4 class="details-title">
+                        <i class="bi bi-arrow-left-right"></i>
+                        {{ lang === 'EN' ? 'Changes Summary' : 'Changes Summary' }}
+                      </h4>
+                      <div class="changes-table-wrap">
+                        <table class="changes-table">
+                          <thead>
+                            <tr>
+                              <th>{{ lang === 'EN' ? 'Field' : 'Field' }}</th>
+                              <th class="col-old">{{ lang === 'EN' ? 'Before' :
+                                'Before' }}
+                              </th>
+                              <th class="col-new">{{ lang === 'EN' ? 'After' : 'After'
+                                }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let change of getDetailChanges(item)">
+                              <td class="field-name">{{ fieldLabel(change.field) }}</td>
+                              <td class="val-old">{{ formatFieldValue(change.field,
+                                change.old) }}</td>
+                              <td class="val-new">{{ formatFieldValue(change.field,
+                                change.new) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- 2. BATCH ITEMS GRID (Multiple Edits) -->
+                    <div class="details-section"
+                      *ngIf="getDetailChanges(item).length === 0 && getDetailItems(item).length > 0">
+                      <h4 class="details-title">
+                        <i class="bi bi-arrow-left-right"></i>
+                        {{ lang === 'EN' ? 'Changes Summary' : 'Changes Summary' }}
+                        <span class="items-count" *ngIf="parseDetails(item)?.count">
+                          ({{ parseDetails(item).count }} {{ lang === 'EN' ? 'items updated' :
+                          'items updated' }})
+                        </span>
+                      </h4>
+                      <div class="changes-table-wrap">
+                        <table class="changes-table">
+                          <thead>
+                            <tr>
+                              <th>{{ lang === 'EN' ? 'Field' : 'Field' }}</th>
+                              <th class="col-old">{{ lang === 'EN' ? 'Before' :
+                                'Before' }}
+                              </th>
+                              <th class="col-new">{{ lang === 'EN' ? 'After' : 'After'
+                                }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody *ngFor="let row of getDetailItems(item)">
+                            <!-- Highlight Row Indicator -->
+                            <tr class="batch-item-header" *ngIf="row.fieldChanges && row.fieldChanges.length > 0">
+                              <td colspan="3" class="part-no-header">
+                                <i class="bi bi-box-seam"></i> <strong>Part No:</strong>
+                                {{
+                                row.PartNo || 'Unknown' }}
+                              </td>
+                            </tr>
+                            <tr *ngFor="let change of row.fieldChanges || []">
+                              <td class="field-name">{{ fieldLabel(change.field) }}</td>
+                              <td class="val-old">{{ formatFieldValue(change.field,
+                                change.old) }}</td>
+                              <td class="val-new">{{ formatFieldValue(change.field,
+                                change.new) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div class="details-section"
+                      *ngIf="getDetailChanges(item).length === 0 && getDetailItems(item).length === 0">
+                      <p class="changes-note">{{ lang === 'EN' ? 'No detailed changes available.'
+                        :
+                        'ไม่พบข้อมูลการเปลี่ยนแปลง' }}</p>
+                    </div>
+                  </ng-container>
+
+                  <!-- NEW PLAN / CANCEL: Item Data Grid -->
+                  <ng-container *ngIf="getDetailType(item) === 'new_plan' || getDetailType(item) === 'cancel'">
+                    <div class="details-section">
+                      <h4 class="details-title">
+                        <i class="bi bi-table"></i>
+                        {{ lang === 'EN' ? 'Items' : 'Items' }}
+                        <span class="items-count" *ngIf="parseDetails(item)?.totalItems">
+                          ({{ parseDetails(item).totalItems }} {{ lang === 'EN' ? 'total' :
+                          'total' }})
+                        </span>
+                      </h4>
+                      <div class="data-grid-wrap" *ngIf="getDetailItems(item).length > 0">
+                        <table class="data-grid">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th *ngFor="let key of getItemKeys(getDetailItems(item)[0], item.Event_Type)">
+                                {{ fieldLabel(key) }}
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let row of getDetailItems(item); let i = index"
+                              [class.cancelled-row]="getDetailType(item) === 'cancel'">
+                              <td class="row-num">{{ i + 1 }}</td>
+                              <td *ngFor="let key of getItemKeys(row, item.Event_Type)"
+                                [class.cancelled-cell]="getDetailType(item) === 'cancel'">
+                                {{ formatFieldValue(key, row[key]) }}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Attachments section for NEW_PLAN — uses live-resolved AttachedFiles from backend -->
+                    <div class="details-section"
+                      *ngIf="getDetailType(item) === 'new_plan' && parseDetails(item)?.AttachedFiles?.length > 0">
+                      <h4 class="details-title">
+                        <i class="bi bi-paperclip"></i>
+                        {{ lang === 'EN' ? 'Attached Documents' : 'เอกสารแนบ' }}
+                        <span class="items-count">({{ parseDetails(item).AttachedFiles.length }})</span>
+                      </h4>
+                      <div class="attachment-links-list" style="display: flex; flex-direction: column; gap: 6px;">
+                        <ng-container *ngFor="let file of parseDetails(item).AttachedFiles">
+                          <div class="attachment-link-item"
+                            style="display: flex; gap: 10px; align-items: center; padding: 6px 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <i class="bi bi-file-earmark-pdf" style="color: #ef4444;"></i>
+                            <a href="javascript:void(0)" (click)="openFile(file.url, file.name)" class="file-hyperlink"
+                              style="color: #2563eb; text-decoration: none; font-size: 0.88rem;">
+                              {{ file.name }}
+                            </a>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <!-- UPDATE_PLAN: Clickable File Links -->
+                  <ng-container *ngIf="getDetailType(item) === 'update_plan'">
+                    <div class="details-section">
+                      <h4 class="details-title">
+                        <i class="bi bi-paperclip"></i>
+                        {{ lang === 'EN' ? 'Attached Documents' : 'Attached Documents' }}
+                      </h4>
+                      <div class="attachment-links-list">
+                        <div *ngFor="let file of parseDetails(item)?.AttachedFiles" class="attachment-link-item">
+                          <i class="bi bi-file-earmark-pdf"></i>
+                          <a href="javascript:void(0)" (click)="openFile(file.url, file.name)" class="file-hyperlink">
+                            {{ file.name }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <!-- GROUPED / INDIVIDUAL REQUEST: Items Table with Progress Status -->
+                  <ng-container
+                    *ngIf="getDetailType(item) === 'grouped_request_completed' || getDetailType(item) === 'request_completed' || getDetailType(item) === 'new_request'">
+                    <div class="details-section">
+                      <div class="grouped-header">
+                        <h4 class="details-title">
+                          <i class="bi bi-grid-3x3-gap-fill"></i>
+                          {{ (getDetailType(item) === 'new_request' ? (lang === 'EN' ?
+                          'Request Details' : 'Request Details') : (lang === 'EN' ?
+                          'Confirmation Details' : 'Confirmation Details')) }}
+                        </h4>
+                        <div class="progress-info" *ngIf="getDetailType(item) === 'grouped_request_completed'"
+                          [class.all-finished]="parseDetails(item)?.isFinished">
+                          <span class="progress-count">{{ parseDetails(item)?.complete || 0 }}
+                            / {{ parseDetails(item)?.total || parseDetails(item)?.totalItems
+                            || 0 }}</span>
+                          <i class="bi bi-patch-check-fill animate-check" *ngIf="parseDetails(item)?.isFinished"></i>
+                        </div>
+                      </div>
+                      <div class="data-grid-wrap">
+                        <table class="data-grid progress-table">
+                          <thead>
+                            <tr>
+                              <th>Item No.</th>
+                              <th>Item Name / Spec</th>
+                              <th>QTY</th>
+                              <th *ngIf="getDetailType(item) !== 'new_request'">Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let gItem of getDetailItems(item)"
+                              [class.item-complete]="gItem.Status === 'Complete'">
+                              <td class="mono">{{ gItem.ItemNo }}</td>
+                              <td class="mono">
+                                <div class="line-clamp-1">{{ gItem.ItemName }}</div>
+                                <div class="line-clamp-1 spec-subtext" *ngIf="gItem.SPEC || gItem.Spec">
+                                  {{ gItem.SPEC || gItem.Spec }}
+                                </div>
+                              </td>
+                              <td class="mono">
+                                {{ gItem.QTY }}
+                              </td>
+                              <td *ngIf="getDetailType(item) !== 'new_request'">
+                                <span class="status-chip-sm"
+                                  [ngClass]="gItem.Status === 'Complete' ? 'complete' : 'waiting'">
+                                  <i class="bi"
+                                    [ngClass]="gItem.Status === 'Complete' ? 'bi-check-circle-fill' : 'bi-clock-history'"></i>
+                                  {{ gItem.Status }}
+                                </span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                </ng-container>
+
+                <!-- CTA Removed per request -->
+              </div>
+            </div>
+
+          </li>
+        </ul>
+
+        <!-- Empty State -->
+        <ng-template #emptyState>
+          <div class="empty-state">
+            <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.15;"></i>
+            <p class="empty-title">Your inbox is empty</p>
+            <p class="empty-desc">No notifications found for the current filter.</p>
+          </div>
+        </ng-template>
+
+        <!-- Inbox Pagination Footer -->
+        <div class="pagination-footer" *ngIf="(totalInboxPages$ | async) as totalPages">
+          <div class="pagination-controls" *ngIf="totalPages > 1">
+            <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+              <i class="bi bi-chevron-left"></i>
+              {{ lang === 'EN' ? 'Previous' : 'ก่อนหน้า' }}
+            </button>
+            <span class="page-info">
+              {{ lang === 'EN' ? 'Page' : 'หน้า' }} {{ currentPage }} {{ lang === 'EN' ? 'of' : 'จาก' }}
+              {{
+              totalPages }}
+            </span>
+            <button class="page-btn" (click)="nextPage(totalPages)" [disabled]="currentPage === totalPages">
+              {{ lang === 'EN' ? 'Next' : 'ถัดไป' }}
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+
+    <!-- =D=D=D TRASH View =D=D=D -->
+    <div class="inbox-list-body trash-view" *ngIf="view === 'trash'">
+      <!-- Safe Loading State Gate -->
+      <ng-container *ngIf="isLoading$ | async; else trashDataState">
+        <div class="inbox-loading-state">
+          <div class="loading-pulse-ring"></div>
+          <div class="loading-text">รอโหลดข้อมูลสักครู่ครับ</div>
+        </div>
+      </ng-container>
+
+      <ng-template #trashDataState>
+        <!-- 3-day Auto-Delete Warning Banner -->
+        <div class="trash-warning">
+          <i class="bi bi-clock-history"></i>
+          <span *ngIf="lang === 'EN'">
+            Messages in the trash will be automatically deleted within 3&nbsp;days.
+            You can restore them before they are permanently cleared.
+          </span>
+          <span *ngIf="lang === 'TH'">
+            ข้อความในถังขยะจะถูกลบถาวรโดยอัตโนมัติภายใน 3 วัน
+            (สามารถกู้คืนข้อความได้หากยังไม่ถูกลบ)
+          </span>
+        </div>
+
+        <!-- Trash Item List (filtered by current PMC/GM tab) -->
+        <ul class="notification-list" *ngIf="(filteredTrash$ | async)?.length; else emptyTrash">
+          <li *ngFor="let item of filteredTrash$ | async; trackBy: trackByNotificationId"
+            class="notification-item trash-item read">
+            <div class="row-header trash-row-header">
+              <div class="icon-circle" [style.background-color]="'#94a3b820'" [style.color]="'#94a3b8'">
+                <i class="bi" [class]="getIconClass(item)"></i>
+              </div>
+              <div class="row-summary">
+                <div class="notif-title-row">
+                  <span class="notif-type-label">{{ getEventLabel(item) }}</span>
+                  <span class="notif-docno" *ngIf="item.Doc_No">{{ item.Doc_No }}</span>
+                </div>
+                <div class="notif-subject">{{ getSubject(item) }}</div>
+                <div class="notif-meta"><span class="notif-time">{{ item.Created_At | date:'dd/MM/yyyy
+                    HH:mm' }}</span></div>
+              </div>
+              <div class="trash-item-actions">
+                <button class="restore-btn" (click)="restoreItem(item.Notification_ID)"
+                  title="{{ lang === 'TH' ? 'กู้คืน' : 'Restore' }}">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  {{ lang === 'TH' ? 'กู้คืน' : 'Restore' }}
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        <!-- Empty Trash State -->
+        <ng-template #emptyTrash>
+          <div class="empty-state">
+            <i class="bi bi-trash3" style="font-size: 3rem; opacity: 0.15;"></i>
+            <p class="empty-title">{{ lang === 'TH' ? 'ถังขยะว่างเปล่า' : 'Trash is empty' }}</p>
+            <p class="empty-desc">{{ lang === 'TH' ? 'ไม่มีข้อความที่ถูกลบใน ' + (filter === 2 ? 'PMC' :
+              'GM') : 'No deleted ' + (filter === 2 ? 'PMC' : 'GM')
+              + ' notifications.' }}</p>
+          </div>
+        </ng-template>
+
+        <!-- Trash Pagination Footer -->
+        <div class="pagination-footer" *ngIf="(totalTrashPages$ | async) as totalPages">
+          <div class="pagination-controls" *ngIf="totalPages > 1">
+            <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+              <i class="bi bi-chevron-left"></i>
+              {{ lang === 'EN' ? 'Previous' : 'ก่อนหน้า' }}
+            </button>
+            <span class="page-info">
+              {{ lang === 'EN' ? 'Page' : 'หน้า' }} {{ currentPage }} {{ lang === 'EN' ? 'of' : 'จาก' }}
+              {{
+              totalPages }}
+            </span>
+            <button class="page-btn" (click)="nextPage(totalPages)" [disabled]="currentPage === totalPages">
+              {{ lang === 'EN' ? 'Next' : 'ถัดไป' }}
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- Print Preview Modal -->
+<div class="modal-backdrop" *ngIf="isPrintModalOpen" style="z-index: 99999;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+        <i class="bi bi-printer text-gray-700"></i> Print Preview - {{ selectedFileName }}
+      </h3>
+      <button class="btn-close" (click)="closePrintModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" style="overflow-y: hidden; flex: 1; padding: 12px; display: flex; flex-direction: column;">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <strong style="font-size: 0.85rem; color: #475569;">Preview</strong>
+        <div class="zoom-controls" *ngIf="previewUrl">
+          <button (click)="zoomOut()" class="btn-zoom" title="Zoom Out"><i class="bi bi-dash"></i></button>
+          <span style="margin: 0 8px; font-weight: 600; min-width: 40px; text-align: center; font-size: 0.82rem;">
+            {{ (previewZoom * 100) | number:'1.0-0' }}%
+          </span>
+          <button (click)="zoomIn()" class="btn-zoom" title="Zoom In"><i class="bi bi-plus"></i></button>
+          <button (click)="resetZoom()" class="btn-zoom ms-2" title="Reset"><i
+              class="bi bi-arrow-counterclockwise"></i></button>
+        </div>
+      </div>
+
+      <div #pdfScrollContainer (mousedown)="onPanStart($event, pdfScrollContainer)"
+        (mousemove)="onPanMove($event, pdfScrollContainer)" (mouseup)="onPanEnd()" (mouseleave)="onPanEnd()"
+        [style.cursor]="isPanning ? 'grabbing' : (previewZoom > 1 ? 'grab' : 'default')"
+        style="flex: 1; border: 1px solid #e2e8f0; border-radius: 6px; overflow: auto; background: #f3f4f6; position: relative; display: flex; justify-content: center; align-items: flex-start; user-select: none; min-height: 0;">
+
+        <div *ngIf="previewUrl" [style.transform]="'scale(' + previewZoom + ')'"
+          style="transform-origin: top center; transition: all 0.2s ease-out; width: 100%; height: 100%; min-width: 100%; min-height: 100%; position: relative;">
+
+          <div *ngIf="previewZoom > 1" style="position: absolute; inset: 0; z-index: 10; background: transparent;">
+          </div>
+
+          <iframe [src]="previewUrl" width="100%" height="100%"
+            style="border: none; display: block; background: white;">
+          </iframe>
+        </div>
+
+        <div *ngIf="!previewUrl"
+          style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #94a3b8; flex-direction: column; gap: 8px;">
+          <i class="bi bi-hourglass-split" style="font-size: 2rem; animation: spin 2s linear infinite;"></i>
+          <span style="font-size: 0.88rem;">Loading document...</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closePrintModal()">Close</button>
+    </div>
+  </div>
+</div>

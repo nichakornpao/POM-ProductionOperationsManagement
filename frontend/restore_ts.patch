@@ -1,0 +1,135 @@
+diff --git a/ProductionOperationsManagement/frontend/src/app/pages/purchase/history-request/history-request.component.ts b/ProductionOperationsManagement/frontend/src/app/pages/purchase/history-request/history-request.component.ts
+index aba5563..6a732d0 100644
+--- a/src/app/pages/purchase/history-request/history-request.component.ts
++++ b/src/app/pages/purchase/history-request/history-request.component.ts
+@@ -512,2 +512,5 @@
+     this.onPaginateChange(null);
++    this.requests.forEach(r => r.Selection = false);
++    this.selectAllCheck = false;
++
+     if (!this.Division_) {
+@@ -518,2 +521,5 @@
+       const matchDivision = (isFilterPMC && isReqPMC) || (isFilterGM && isReqGM) || item.Division === this.Division_;
+ 
++      // กรอง Mock Data (ถ้า showMockOnly = true ให้โชว์แค่ isMockTest, ถ้า false ให้ซ่อน isMockTest)
++      const matchMockState = this.showMockOnly ? (item.isMockTest === true) : (!item.isMockTest);
++
+@@ -557,3 +563,3 @@
+       }
+ 
+-      return matchStatus && matchDivision && matchItemNo && matchPartNo && matchDocumentNo && matchDate && matchAS400;
++      return matchStatus && matchDivision && matchMockState && matchItemNo && matchPartNo && matchDocumentNo && matchDate && matchAS400;
+     });
+@@ -1014,3 +1020,2 @@
+       DOCUMENT_NO: req.DocNo || '',
+-      Stock_Location: req.Stock_Location || '',
+       MATL_LOT: req.MatLot || '',
+@@ -1038,5 +1043,19 @@
+ 
+-  // // highlight บนหน้าเว็บ
+-  // selectedRows.forEach(row => {
+-  //   row.querySelectorAll('td').forEach(td => td.style.backgroundColor = '#b6f0b6');
+-  // });
++  addTestMockData() {
++    this.showMockOnly = !this.showMockOnly; // Toggle the view state
++    
++    // Do not automatically switch Division, let the user select it.
++    
++    this.onFilter();
++
++    if (this.showMockOnly) {
++      Swal.fire({
++        icon: 'info',
++        title: '🧪 โหมดประวัติจำลอง',
++        html: `แสดงเฉพาะ <b>ข้อมูลจำลอง (แถบแดง) ที่ถูกตัดสต็อกเรียบร้อยแล้ว</b><br><br>
++        จำลองเสมือนว่าข้อมูลถูกส่งมาจากหน้า Request List เข้าสู่ระบบ ISSUE AS400<br>
++        (ข้อมูลจริงถูกซ่อนไว้ชั่วคราว กดปุ่ม <b>ประวัติจำลอง</b> อีกครั้งเพื่อกลับหน้าปกติ)`,
++        confirmButtonText: 'รับทราบ'
++      });
++    }
++  }
+ 
+@@ -1081,2 +1100,3 @@
+         'Quantity': req.QTY || 0,
++        'ON_HAND': req.ON_HAND ?? req.STOCK_ON_HAND ?? 0,
+         'DOCNo': req.DocNo || '',
+@@ -1093,3 +1113,4 @@
+         'Pcname': this.as400Config.pcName || '',
+-        'Public_Id': req.Public_Id
++        'Public_Id': req.Public_Id,
++        'isMockTest': !!req.isMockTest
+       };
+@@ -1098,2 +1119,34 @@
+     // 3. ยืนยันการส่ง
++    if (this.showMockOnly) {
++      // Mock / Dry Run logic
++      this.purchasehistory.exportToAS400(this.Division_!, mappedData).subscribe({
++        next: (res) => {
++          const remainingMocks = this.filteredRequests.filter(r => r.isMockTest && !r.Selection).length;
++          this.testCutLogs.unshift({
++            action: 'Mock AS400 Execution',
++            time: new Date().toLocaleTimeString('th-TH'),
++            cutCount: selectedRequests.length,
++            cutItems: selectedRequests.map(r => r.ItemNo),
++            remainingMockCount: remainingMocks
++          });
++
++          Swal.fire({
++            icon: 'success',
++            title: '✅ DRY RUN SUCCESS / อนุมัติการตัดเทียมสำเร็จ',
++            html: `จำลองการตัดสต็อกไปยัง <b>Backend & AS400</b> สำเร็จแล้ว!<br><br>
++                   - ส่งข้อมูลจำลองจำนวน: <b>${selectedRequests.length} รายการ</b><br>
++                   - ฐานข้อมูลที่ถูกจำลองการแก้: <code>TestIssueAs400</code><br>
++                   - ผลกระทบต่อ AS400/DB ของจริง: <b>0%</b>`,
++            confirmButtonText: 'ตกลง'
++          }).then(() => {
++            // Remove the cut mock items from the UI to simulate successful stock cut
++            this.requests = this.requests.filter(req => !selectedRequests.includes(req));
++            this.selectAllCheck = false;
++            this.onFilter();
++          });
++        },
++        error: (err) => {
++          Swal.fire({ icon: 'error', title: 'Dry Run Error', text: err.message });
++        }
++      });
++      return;
++    }
++
++    // Real Run Logic
+     Swal.fire({
+@@ -1193,2 +1246,34 @@
+   }
++
++  showTestLogs() {
++    if (this.testCutLogs.length === 0) {
++      Swal.fire({
++        icon: 'info',
++        title: '📜 ประวัติการตัดทดสอบ (Test History Log)',
++        text: 'ยังไม่มีประวัติการตัดทดสอบในเซสชันนี้ ลองติ๊กเลือกข้อมูลจำลอง (แถบแดง) แล้วกดปุ่ม ISSUE TO AS400 ดูครับ!'
++      });
++      return;
++    }
++
++    const logHtml = this.testCutLogs.map((log, index) => `
++      <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; margin-bottom: 10px; text-align: left; font-size: 13px;">
++        <div style="font-weight: 700; color: #2563eb; display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">
++          <span>#${this.testCutLogs.length - index} ${log.action}</span>
++          <span style="color: #64748b; font-size: 12px;">⏰ ${log.time}</span>
++        </div>
++        <div style="margin-top: 6px; color: #0f172a;">
++          • รายการที่ถูกตัดออกจริง: <b style="color: #ef4444;">${log.cutCount} รายการ</b> (${log.cutItems.join(', ')})<br>
++          • รายการจำลองคงเหลือในตาราง: <b>${log.remainingMockCount} รายการ</b><br>
++          • สถานะ DB จริง: <span class="badge bg-success" style="font-size: 11px;">0 DB Affected (Safe Test)</span>
++        </div>
++      </div>
++    `).join('');
++
++    Swal.fire({
++      title: '📜 ประวัติการตัด (Dry Run Log)',
++      html: `<div style="max-height: 400px; overflow-y: auto;">${logHtml}</div>`,
++      width: '600px',
++      confirmButtonText: 'ปิดหน้านี้'
++    });
++  }
+ }

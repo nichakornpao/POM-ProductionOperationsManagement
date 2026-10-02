@@ -1,0 +1,420 @@
+$primary: #4f46e5; // Indigo 600
+$danger: #ef4444; // Red 500
+$success: #10b981; // Emerald 500
+$bg-color: #ffffff;
+$text-main: #374151; // Gray 700
+$text-light: #6b7280; // Gray 500
+
+.notification-container {
+  position: fixed;
+  top: 30px; // Changed from bottom
+  right: 30px;
+  z-index: 9999;
+  font-family: 'Kanit', sans-serif;
+}
+
+// Floating Bell Button
+.bell-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed); // Blue to Indigo
+  color: white;
+  font-size: 24px;
+  border: none;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5), 0 8px 10px -6px rgba(37, 99, 235, 0.1);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:hover {
+    transform: scale(1.1) rotate(15deg);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: $danger;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+  }
+
+  // Pulse Animation
+  .pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 4px solid rgba(239, 68, 68, 0.6);
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+// Letter View Popup
+.letter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+
+  .letter-paper {
+    background: #fff;
+    width: 90%;
+    max-width: 500px;
+    padding: 2.5rem;
+    border-radius: 4px;
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.15),
+      0 10px 0 -5px #eee,
+      0 10px 1px -4px rgba(0, 0, 0, 0.15),
+      0 20px 0 -10px #eee,
+      0 20px 1px -9px rgba(0, 0, 0, 0.15),
+      0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    position: relative;
+    background-image:
+      linear-gradient(90deg, transparent 95%, #f3f4f6 95%),
+      linear-gradient(#f3f4f6 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: $text-light;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: $danger;
+      }
+    }
+
+    .letter-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid $primary;
+      padding-bottom: 1rem;
+
+      .stamp {
+        width: 60px;
+        height: 60px;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        transform: rotate(-10deg);
+      }
+
+      .meta {
+        h3 {
+          margin: 0;
+          color: $primary;
+          font-weight: 800;
+          font-size: 1.5rem;
+          text-transform: uppercase;
+        }
+
+        .date,
+        .time {
+          display: block;
+          font-size: 0.85rem;
+          color: $text-light;
+        }
+      }
+    }
+
+    .letter-body {
+      font-family: 'Sarabun', 'Kanit', sans-serif;
+      color: $text-main;
+      line-height: 1.6;
+
+      .subject {
+        font-size: 1.25rem;
+        color: $text-main;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+
+      .content {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .doc-ref {
+        background: #f8fafc;
+        padding: 0.75rem;
+        border-left: 4px solid $success;
+        font-size: 0.9rem;
+        color: $text-light;
+      }
+    }
+
+    .letter-footer {
+      margin-top: 3rem;
+      text-align: center;
+      opacity: 0.6;
+      border-top: 1px dashed #e5e7eb;
+      padding-top: 1rem;
+
+      .logo-sign {
+        height: 30px;
+        margin-bottom: 0.5rem;
+        filter: grayscale(1);
+      }
+
+      p {
+        font-size: 0.8rem;
+        margin: 0;
+        font-style: italic;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  20%,
+  60% {
+    transform: rotate(-15deg);
+  }
+
+  40%,
+  80% {
+    transform: rotate(15deg);
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out infinite alternate;
+  animation-delay: 2s; // Shake every few seconds if unread
+  animation-iteration-count: 2;
+}
+
+// Notification Panel
+.notification-panel {
+  position: absolute;
+  top: 80px; // Changed from bottom
+  right: 0;
+  width: 360px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  transform-origin: top right; // Changed from bottom right
+  transform: scale(0) translateY(-20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &.show {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .panel-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: $text-main;
+      font-size: 16px;
+
+      i {
+        color: $primary;
+      }
+    }
+
+    .mark-read-btn {
+      font-size: 12px;
+      color: $primary;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .panel-body {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0;
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: $text-light;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+
+      i {
+        font-size: 32px;
+        opacity: 0.5;
+      }
+
+      p {
+        font-size: 14px;
+        margin: 0;
+      }
+    }
+
+    .notification-item {
+      padding: 16px 20px;
+      display: flex;
+      gap: 15px;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.2s;
+      cursor: pointer;
+      position: relative;
+
+      &:hover {
+        background: #f8fafc;
+      }
+
+      &.unread {
+        background: #f0f9ff; // Light Blue
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: $primary;
+        }
+      }
+
+      .icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #e0e7ff; // Light Indigo
+        color: $primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+
+        &.new-plan {
+          background: #dcfce7; // Light Green
+          color: $success;
+        }
+
+        &.cancel-plan {
+          background: #fee2e2; // Light Red
+          color: $danger;
+        }
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .message {
+          font-size: 14px;
+          margin: 0;
+          color: $text-main;
+          line-height: 1.4;
+          font-weight: 500;
+        }
+
+        .time {
+          font-size: 11px;
+          color: $text-light;
+        }
+      }
+    }
+  }
+}

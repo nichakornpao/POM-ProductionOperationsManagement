@@ -1,0 +1,84 @@
+<div class="notification-container">
+  <!-- Floating Bell Button -->
+  <button class="bell-btn" [class.shake]="(unreadCount$ | async)! > 0" (click)="togglePanel()">
+    <i class="bi bi-bell-fill"></i>
+    <span class="badge" *ngIf="(unreadCount$ | async) as count">{{ count > 99 ? '99+' : count }}</span>
+    <div class="pulse-ring" *ngIf="(unreadCount$ | async)! > 0"></div>
+  </button>
+
+  <!-- Notification Panel (Old Dropdown - Hidden for now or can be kept) -->
+  <div class="notification-panel" [class.show]="isOpen">
+    <div class="panel-header">
+      <div class="header-title">
+        <i class="bi bi-bell"></i>
+        <span>Notifications</span>
+      </div>
+      <button class="btn btn-sm btn-light rounded-circle" (click)="markAllRead()" *ngIf="(unreadCount$ | async)! > 0" title="Mark all as read">
+        <i class="bi bi-check2-all fs-5 text-primary"></i>
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <div class="empty-state" *ngIf="(notifications$ | async)?.length === 0">
+        <i class="bi bi-bell-slash"></i>
+        <p>No notifications yet</p>
+      </div>
+
+      <div class="notification-item" *ngFor="let item of notifications$ | async" [class.unread]="!item.IsRead"
+        (click)="openDetail(item)">
+        <div class="icon-wrapper" [ngClass]="{
+                    'new-plan': item.Event_Type === 'NEW_PLAN',
+                    'cancel-plan': item.Event_Type === 'CANCEL_PLAN'
+                }">
+          <i class="bi bi-file-earmark-plus" *ngIf="item.Event_Type === 'NEW_PLAN'"></i>
+          <i class="bi bi-x-circle" *ngIf="item.Event_Type === 'CANCEL_PLAN'"></i>
+          <i class="bi bi-paperclip" *ngIf="item.Event_Type === 'UPDATE_PLAN'"></i>
+          <i class="bi bi-info-circle"
+            *ngIf="!['NEW_PLAN', 'CANCEL_PLAN', 'UPDATE_PLAN'].includes(item.Event_Type)"></i>
+        </div>
+        <div class="content icon_content">
+          <p class="message">{{ item.Message }}</p>
+          <span class="time">{{ item.Created_At | date:'dd/MM/yy HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Letter View Popup Overlay -->
+  <div class="letter-overlay" *ngIf="selectedNotification" (click)="closeDetail()">
+    <div class="letter-paper" (click)="$event.stopPropagation()">
+      <button class="close-btn" (click)="closeDetail()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+
+      <div class="letter-header">
+        <div class="stamp">
+          <i class="bi bi-envelope-paper-heart-fill"></i>
+        </div>
+        <div class="meta">
+          <h3>Notification</h3>
+          <span class="date">{{ selectedNotification.Created_At | date:'fullDate' }}</span>
+          <span class="time">{{ selectedNotification.Created_At | date:'shortTime' }}</span>
+        </div>
+      </div>
+
+      <div class="letter-body">
+        <h4 class="subject">{{ selectedNotification.Event_Type | titlecase }}</h4>
+        <p class="content">{{ selectedNotification.Message }}</p>
+
+        <div class="doc-ref" *ngIf="selectedNotification.Doc_No">
+          Reference: <strong>{{ selectedNotification.Doc_No }}</strong>
+        </div>
+      </div>
+
+      <div class="letter-footer">
+        <img src="assets/images/logo.png" alt="MinebeaMitsumi" class="logo-sign" onerror="this.style.display='none'">
+        <p>System Generated Notification</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gmail-Style Inbox Modal -->
+  <app-notification-inbox [isOpen]="isInboxOpen" (close)="closeInbox()">
+  </app-notification-inbox>
+</div>

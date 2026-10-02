@@ -1,0 +1,1412 @@
+<div class="content-area">
+
+  <!-- ===== ROW 1: Main Header (Title + Dept Tabs + Action Buttons) ===== -->
+  <div class="main-header">
+    <div class="header-left">
+      <h4>Plan List</h4>
+      <span class="breadcrumb-label">{{ selectedDepartment }} Plan List</span>
+    </div>
+
+    <div class="header-center">
+      <div class="dept-tabs-container">
+        <div class="dept-tabs">
+          <button *ngFor="let dept of departments" class="dept-tab" [class.active]="selectedDepartment === dept"
+            [class.disabled]="!isDeptAllowed(dept)" (click)="selectDepartment(dept)">
+            {{ dept }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right" *ngIf="selectedDepartment">
+      <button *ngFor="let sub of subTabs" class="btn-upcoming-premium" [class.active]="selectedSubTab === sub"
+        (click)="selectSubTab(sub)">
+        {{ sub }}
+        <span *ngIf="sub === 'Required' && getActionRequiredCount(selectedDepartment) > 0" class="return-badge">{{
+          getActionRequiredCount(selectedDepartment) }}</span>
+        <span *ngIf="sub === 'Completed'" class="action-count" style="display: none;">
+          <!-- Hidden as requested: no count for completed -->
+        </span>
+        <!-- Return badge: red pulsing circle (PD only) -->
+        <span *ngIf="sub === 'Return' && selectedDepartment === 'PD' && returnCount > 0" class="return-badge">{{
+          returnCount }}</span>
+      </button>
+
+      <!-- Export Button (All Tabs) -->
+      <button type="button" class="btn-export-premium" (click)="onExport($event)">
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        <span>Export</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== ROW 2: Filter Toolbar (Range Tabs + Inline Filters) ===== -->
+  <div class="filter-toolbar">
+    <div class="toolbar-left">
+      <div class="range-tabs-container"
+        *ngIf="selectedSubTab === 'Upcoming' || selectedSubTab === 'Required' || selectedSubTab === 'Completed' || selectedSubTab === 'Return'">
+        <div class="range-tabs">
+          <button *ngFor="let range of dateRanges" class="range-tab" [class.active]="selectedDateRange === range"
+            (click)="selectDateRange(range)">
+            {{ range }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="filter-item date-filter">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <input matInput [matDatepicker]="picker" [(ngModel)]="filterDate" placeholder="DD/MM/YYYY"
+            (dateChange)="onFilterChange()" (click)="picker.open()" readonly>
+          <button *ngIf="filterDate" matSuffix mat-icon-button aria-label="Clear"
+            (click)="clearDate(null); $event.stopPropagation()"
+            style="width: 24px; height: 24px; line-height: 24px; padding: 0; margin-right: 4px; border: none; background: transparent; cursor: pointer;">
+            <i class="bi bi-x-circle-fill" style="color: #ef4444; font-size: 16px;"></i>
+          </button>
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+        <button class="btn-today" (click)="setToday(null)">Today</button>
+      </div>
+
+      <div class="filter-item">
+        <select [(ngModel)]="filterDivision" (change)="onFilterChange()">
+          <option value="All">Division: All</option>
+          <option *ngFor="let div of divisions" [value]="div">{{ div }}</option>
+        </select>
+      </div>
+
+      <!-- Barcode Scanner Search Filter -->
+      <div class="filter-item barcode-scanner-item" style="position: relative; display: flex; align-items: center;">
+        <i class="bi bi-upc-scan" style="position: absolute; left: 10px; color: #2563eb; font-size: 1.1rem; z-index: 2;"></i>
+        <input type="text" [(ngModel)]="barcodeSearch" (ngModelChange)="onBarcodeSearchChange()"
+          placeholder="Scan Barcode / RequestNo..." class="form-control form-control-sm"
+          style="padding-left: 32px; padding-right: 28px; height: 36px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; width: 210px; transition: border-color 0.2s;">
+        <button *ngIf="barcodeSearch" (click)="clearBarcodeSearch()"
+          style="position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; color: #ef4444; padding: 0;">
+          <i class="bi bi-x-circle-fill" style="font-size: 14px;"></i>
+        </button>
+      </div>
+
+      <div class="filter-item checkbox-item">
+        <input type="checkbox" id="showHistory" [(ngModel)]="showHistory" (change)="onFilterChange()">
+        <label>All Revisions</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CSS Grid Table (Shared natively by Return Tab now) ===== -->
+  <div class="grid-table-wrapper"
+    [class]="'grid-table-wrapper dept-' + (selectedDepartment || 'PC').toLowerCase() + (selectedSubTab ? ' subtab-' + selectedSubTab.toLowerCase() : '')">
+    <!-- Header Row (Grouped) -->
+    <div class="grid-header-group">
+      <!-- Filter Row -->
+      <!-- Main Header Row -->
+      <div class="grid-header main-header-row">
+        <div class="grid-cell col-no sticky-col" style="justify-content: center; display: flex; align-items: center; gap: 6px;">
+          <input type="checkbox" *ngIf="selectedDepartment === 'EN' && selectedSubTab === 'Required'"
+            class="en-select-checkbox header-checkbox"
+            [checked]="isAllEnSelected()"
+            (change)="toggleSelectAllEn($event)"
+            title="Select All">
+          <span>NO</span>
+        </div>
+        <div class="grid-cell col-action sticky-col" style="justify-content: center;">Date</div>
+        <div class="grid-cell col-print sticky-col" style="justify-content: center;">Orders</div>
+        <div class="grid-cell">Plan Setup</div>
+        <div class="grid-cell text-center" style="justify-content: center;">Rev</div>
+        <div class="grid-cell text-center col-status" style="justify-content: center; overflow: visible;">
+          <div class="header-flex justify-content-center">
+            <span style="position: relative; top: -2px;">Status</span>
+            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+              <i class="bi bi-funnel-fill filter-icon" [class.active]="filterStatus.length"
+                (click)="toggleFilter('Status')"></i>
+              <div class="filter-dropdown" *ngIf="activeFilter === 'Status'">
+                <ng-select class="premium-select" [items]="statusList" [(ngModel)]="filterStatus"
+                  placeholder="Select Status" [multiple]="true" [clearable]="true" (change)="onFilterChange()"
+                  appendTo="body"></ng-select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-cell" style="overflow: visible;">
+          <div class="header-flex">
+            <span style="position: relative; top: -2px;">MC Type</span>
+            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+              <i class="bi bi-funnel-fill filter-icon" [class.active]="filterMachineType.length"
+                (click)="toggleFilter('MC Type')"></i>
+              <div class="filter-dropdown" *ngIf="activeFilter === 'MC Type'">
+                <ng-select class="premium-select" [items]="machineTypes" [(ngModel)]="filterMachineType"
+                  placeholder="Select MC Type" [multiple]="true" [clearable]="true" (change)="onFilterChange()"
+                  appendTo="body"></ng-select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-cell">Bar Type</div>
+        <div class="grid-cell">Division</div>
+        <div class="grid-cell" style="overflow: visible;">
+          <div class="header-flex">
+            <span style="position: relative; top: -2px;">Fac</span>
+            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+              <i class="bi bi-funnel-fill filter-icon" [class.active]="filterFac.length"
+                (click)="toggleFilter('Fac')"></i>
+              <div class="filter-dropdown" *ngIf="activeFilter === 'Fac'">
+                <ng-select class="premium-select" [items]="facList" [(ngModel)]="filterFac"
+                  placeholder="Select Facility" [multiple]="true" [clearable]="true" (change)="onFilterChange()"
+                  appendTo="body"></ng-select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-cell" style="overflow: visible;">
+          <div class="header-flex">
+            <span style="position: relative; top: -2px;">Process</span>
+            <div class="filter-wrapper" (click)="$event.stopPropagation()">
+              <i class="bi bi-funnel-fill filter-icon" [class.active]="filterProcess.length"
+                (click)="toggleFilter('Process')"></i>
+              <div class="filter-dropdown" *ngIf="activeFilter === 'Process'">
+                <ng-select class="premium-select" [items]="processList" [(ngModel)]="filterProcess"
+                  placeholder="Select Process" [multiple]="true" [clearable]="true" (change)="onFilterChange()"
+                  appendTo="body"></ng-select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-cell">Part Before</div>
+        <div class="grid-cell">MC No.</div>
+        <div class="grid-cell" style="overflow: visible; position: relative;">
+          <span style="position: relative; top: -2px;">Part NO.</span>
+          <div class="filter-wrapper" style="position: absolute; right: 2px; top: 50%; transform: translateY(-50%);"
+            (click)="$event.stopPropagation()">
+            <i class="bi bi-funnel-fill filter-icon" [class.active]="filterPartNo.length"
+              (click)="toggleFilter('Part NO')"></i>
+            <div class="filter-dropdown" *ngIf="activeFilter === 'Part NO'">
+              <ng-select class="premium-select" [items]="partNoList" [(ngModel)]="filterPartNo"
+                placeholder="Select Part No" [multiple]="true" [clearable]="true" (change)="onFilterChange()"
+                appendTo="body"></ng-select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-cell text-center" style="justify-content: center;">PD QTY</div>
+        <div class="grid-cell">CYCLE TIME</div>
+        <div class="grid-cell text-center" style="justify-content: center;">MC QTY</div>
+        <div class="grid-cell">Comment</div>
+        <div class="grid-cell text-center" style="justify-content: center;">
+          <span style="border-bottom: 2px solid #1d4ed8; padding-bottom: 2px;">Path Dwg</span>
+        </div>
+        <div class="grid-cell text-center" style="justify-content: center;">
+          <span style="border-bottom: 2px solid #1d4ed8; padding-bottom: 2px;">Path Layout</span>
+        </div>
+        <div class="grid-cell text-center" style="justify-content: center;">
+          <span style="border-bottom: 2px solid #16a34a; padding-bottom: 2px;">IIQC</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Data Body -->
+    <div class="grid-body">
+
+      <!-- Skeleton rows: shown while loading (instant feedback) -->
+      <ng-container *ngIf="isLoading">
+        <div class="grid-row skeleton-row" *ngFor="let sk of skeletonRows">
+          <div class="grid-cell col-no sticky-col">
+            <div class="skeleton-bar" style="width:24px;"></div>
+          </div>
+          <div class="grid-cell col-action sticky-col">
+            <div class="skeleton-bar" style="width:80px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:20px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:70px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:20px;"></div>
+          </div>
+          <div class="grid-cell col-status">
+            <div class="skeleton-bar" style="width:80px;margin:auto;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:60px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:50px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:40px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:40px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:55px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:70px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:30px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:60px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:30px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:30px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:40px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:60px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:70px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:70px;"></div>
+          </div>
+          <div class="grid-cell">
+            <div class="skeleton-bar" style="width:50px;"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Real data rows: Accordion grouped by PlanDate (1 request = 1 button) -->
+      <ng-container *ngIf="!isLoading">
+        <ng-container *ngFor="let group of visibleGroupedPlanList; let gi = index">
+
+          <!-- ═══ Accordion Header (1 Request = 1 Grid Row aligned with table) ═══ -->
+          <div class="grid-row accordion-header-row" (click)="toggleGroup(group.key)"
+            [class.expanded]="isGroupExpanded(group.key)"
+            [class.cancelled]="group.isAllCancelled" [class.finished]="group.isFinished && !group.isAllCancelled"
+            [class.expired]="group.isExpired && !group.isAllCancelled && !group.isFinished">
+            <!-- NO column → Index Number + Chevron Toggle -->
+            <div class="grid-cell col-no sticky-col accordion-toggle-cell" style="justify-content: center;">
+              <span class="accordion-index">{{ gi + 1 }}</span>
+              <i class="bi accordion-chevron" [class.bi-chevron-down]="isGroupExpanded(group.key)"
+                [class.bi-chevron-right]="!isGroupExpanded(group.key)"></i>
+            </div>
+            <!-- Action (Date) column → Date (Centered) -->
+            <div class="grid-cell col-action sticky-col accordion-date-cell" style="justify-content: center;">
+              <ng-container *ngIf="group.timeDisplay; else defaultDateCell">
+                <div class="en-date-col-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; padding: 2px 0;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="bi bi-calendar3"></i>
+                    <span class="accordion-date-text">{{ group.date }}</span>
+                  </div>
+                  <div class="en-time-sub" style="font-size: 0.72rem; color: #475569; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 1px;" [title]="group.allTimes || group.timeDisplay">
+                    <i class="bi bi-clock" style="font-size: 0.68rem; color: #64748b;"></i>
+                    <span>{{ group.timeDisplay }}</span>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #defaultDateCell>
+                <i class="bi bi-calendar3"></i>
+                <span class="accordion-date-text">{{ group.date }}</span>
+              </ng-template>
+            </div>
+            <!-- Print (Orders) column → Finish / Cancelled / Order Count -->
+            <div class="grid-cell col-print sticky-col accordion-order-cell">
+              <ng-container *ngIf="group.isFinished && !group.isAllCancelled; else notFinishedBadge">
+                <span class="accordion-badge-finished">Ready</span>
+              </ng-container>
+              <ng-template #notFinishedBadge>
+                <ng-container *ngIf="!group.isAllCancelled; else cancelledBadge">
+                  <span class="accordion-badge">{{ group.orderCount }} {{ group.orderCount > 1 ? 'orders' : 'order'
+                    }}</span>
+                </ng-container>
+                <ng-template #cancelledBadge>
+                  <span class="accordion-badge-cancelled">Cancel</span>
+                </ng-template>
+              </ng-template>
+            </div>
+            <!-- Column 4: Plan Setup / Part summary -->
+            <div class="grid-cell accordion-summary-cell" style="grid-column: 4 / 5; padding-left: 8px; justify-content: flex-start; overflow: hidden;">
+              <span class="accordion-parts" *ngIf="group.summaryParts" [title]="group.summaryParts">
+                <i class="bi bi-box-seam"></i> {{ group.summaryParts }}
+              </span>
+            </div>
+            <!-- Column 5: Rev -->
+            <div class="grid-cell text-center" style="grid-column: 5 / 6; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #1e3a8a;" [title]="group.revTooltip || ''">
+              <span>{{ group.rev !== undefined && group.rev !== null && group.rev !== '' ? group.rev : '-' }}</span>
+            </div>
+            <!-- Remaining columns → Status & Expand hint -->
+            <div class="grid-cell accordion-summary-cell" style="grid-column: 6 / 21; padding-left: 8px;">
+              <span class="accordion-expand-hint">
+                <span *ngIf="!isGroupExpanded(group.key)">Click to expand</span>
+                <span *ngIf="isGroupExpanded(group.key)">Click to collapse</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- ═══ Expandable Detail Rows (all orders in this request) ═══ -->
+          <ng-container *ngIf="isGroupExpanded(group.key)">
+            <ng-container *ngFor="let item of group.items; let i = index">
+              <!-- Expired items: ONLY visible on PC tab -->
+              <!-- EN Required tab: hide READY (green) rows and Cancelled/Expired (grey) rows, keep only waiting (blue) -->
+              <div class="grid-row accordion-detail-row"
+                *ngIf="(selectedDepartment !== 'EN' || selectedSubTab !== 'Required')
+                  ? (!item._isExpired || canSeeExpiredTasks)
+                  : ((getProcessStatus(item).status === 'WAIT_BOTH' || getProcessStatus(item).status === 'WAIT_ENG') && item.planStatus !== 'Cancelled' && !item._isExpired)"
+                [class.row-cancelled]="item.planStatus === 'Cancelled'"
+                [class.row-latest]="item.isLatest && showHistory" [class.row-history]="!item.isLatest && showHistory"
+                [class.group-start]="item.isGroupStart && showHistory"
+                [class.row-selected]="selectedDepartment === 'EN' && isEnRowSelected(item)"
+                [class.row-expired]="item._isExpired && item.planStatus !== 'Cancelled'" [ngClass]="{
+              'row-complete': getProcessStatus(item).status === 'READY',
+              'row-incomplete': getProcessStatus(item).status !== 'READY',
+              'pd-waiting-row': selectedDepartment === 'PD' && selectedSubTab === 'Completed' && item.reqStatus === 'Waiting',
+              'pd-complete-row': selectedDepartment === 'PD' && selectedSubTab === 'Completed' && item.reqStatus === 'Complete'
+            }">
+
+                <!-- 1. No. -->
+                <div class="grid-cell col-no sticky-col text-center" style="justify-content: center; display: flex; align-items: center; gap: 6px;">
+                  <input type="checkbox" *ngIf="selectedDepartment === 'EN' && selectedSubTab === 'Required'"
+                    class="en-select-checkbox row-checkbox"
+                    [checked]="isEnRowSelected(item)"
+                    (change)="toggleEnRowSelection(item, $event)"
+                    (click)="$event.stopPropagation()"
+                    title="Select Row">
+                  <span>{{ item._displayIndex }}</span>
+                </div>
+
+                <!-- 2. Action -->
+                <div class="grid-cell col-action sticky-col">
+                  <div class="action-btn-group"
+                    [style.visibility]="((item.planStatus || '').toUpperCase() === 'CANCELLED' && selectedDepartment !== 'PD') ? 'hidden' : 'visible'">
+                    <ng-container *ngIf="item.isLatest">
+                      <ng-container *ngIf="selectedDepartment === 'PC'">
+                        <div class="pc-action-wrapper">
+                          <!-- Fixed button group: always same width -->
+                          <div class="btn-group-fixed">
+                            <button class="btn-edit-pill" (click)="onEdit(item)" title="Edit Plan"
+                              [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">EDIT</button>
+                            <button class="btn-cancel-pill" title="Cancel Plan" (click)="onCancel(item)"
+                              [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">CANCEL</button>
+                            <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                              title="View Tooling Request">VIEW</button>
+                          </div>
+                        </div>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'PD'">
+                        <!-- REQUEST button: shown only in Required sub-tab when no request exists yet (reqStatus is empty) -->
+                        <button
+                          *ngIf="selectedSubTab === 'Required' && (item.planStatus || '').toUpperCase() !== 'CANCELLED' && !item.reqStatus"
+                          class="btn-request-pill me-1" (click)="onRequest(item)"
+                          title="Go to Request Page">REQUEST</button>
+                        <!-- Lock icon: shown only in Required sub-tab when a request already exists -->
+                        <span
+                          *ngIf="selectedSubTab === 'Required' && (item.planStatus || '').toUpperCase() !== 'CANCELLED' && item.reqStatus"
+                          class="btn-locked-pill me-1" title="Request already submitted">
+                          <i class="bi bi-lock-fill"></i>
+                        </span>
+                        <div
+                          *ngIf="!((item.planStatus || '').toUpperCase() === 'CANCELLED' && selectedSubTab === 'Required')"
+                          style="display: inline-flex; align-items: center; gap: 8px;">
+                          <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                            title="View Tooling Request">VIEW</button>
+
+                          <button *ngIf="selectedSubTab === 'Return'" class="btn-cancel-pill me-1"
+                            (click)="onReturnWithItems(item)" title="Return Tooling">RETURN</button>
+
+                          <button *ngIf="selectedSubTab === 'Return'" class="btn-edit-pill me-1"
+                            (click)="onMarkOK(item)" title="Mark as OK">OK</button>
+                        </div>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'PH'">
+                        <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                          title="View Tooling Request">VIEW</button>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'EN'">
+                        <!-- Show ADD PATH if NOT Completed -->
+                        <button *ngIf="selectedSubTab !== 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                          title="Add Path"
+                          [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">ADD
+                          PATH</button>
+                        <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                          title="Edit Attachments"
+                          [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">EDIT</button>
+
+                        <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                          title="View Tooling Request">VIEW</button>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'QC'">
+                        <!-- Show ADD PATH if NOT Completed -->
+                        <button *ngIf="selectedSubTab !== 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                          title="Add IIQC"
+                          [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">ADD
+                          PATH</button>
+                        <button *ngIf="selectedSubTab === 'Completed'" class="btn-edit-pill me-1" (click)="onEdit(item)"
+                          title="Edit IIQC"
+                          [disabled]="item._isExpired && currentUser?.Role !== 'PC' && currentUser?.Role !== 'admin'">EDIT</button>
+
+                        <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                          title="View Tooling Request">VIEW</button>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'Gague'">
+                        <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                          title="View Tooling Request">VIEW</button>
+                      </ng-container>
+                      <ng-container *ngIf="selectedDepartment === 'View'">
+                        <button class="btn-view-pill" (click)="onViewToolingRequest(item)"
+                          title="View Tooling Request">VIEW</button>
+                      </ng-container>
+
+                      <!-- Specific order record time (shown for all departments) -->
+                      <span *ngIf="item.timeOnly" class="en-order-time-tag"
+                        style="font-size: 0.72rem; color: #64748b; font-weight: 600; margin-left: 8px; display: inline-flex; align-items: center; gap: 3px; background: #f1f5f9; padding: 2px 7px; border-radius: 4px; border: 1px solid #e2e8f0;"
+                        [title]="'Recorded time: ' + item.timeOnly">
+                        <i class="bi bi-clock" style="font-size: 0.68rem; color: #94a3b8;"></i>
+                        {{ item.timeOnly }}
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- 3. Print -->
+                <div class="grid-cell col-print sticky-col" style="justify-content: center;">
+                  <div
+                    [style.visibility]="(item.planStatus || '').toUpperCase() === 'CANCELLED' ? 'hidden' : 'visible'">
+                    <ng-container *ngIf="item.isLatest">
+                      <app-print-action-btn [dwgCount]="item.printDwgCount || 0"
+                        [layoutCount]="item.printLayoutCount || 0" [iiqcCount]="item.printIiqcCount || 0"
+                        (onPrint)="openPrintModal(item)">
+                      </app-print-action-btn>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- 4. Plan Date -->
+                <div class="grid-cell">
+                  <div class="date-wrapper">
+                    <span class="plan-date">{{ item.date }}</span>
+                  </div>
+                </div>
+
+                <!-- 5. Rev -->
+                <div class="grid-cell text-center" [title]="getRevTooltip(item)">{{ getItemRev(item) }}</div>
+
+                <!-- 6. Status -->
+                <div class="grid-cell text-center col-status">
+                  <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+
+                    <!-- Default Case: If Cancelled, show ONLY Cancelled Badge -->
+                    <ng-container *ngIf="item.planStatus === 'Cancelled'; else activeStatus">
+                      <span class="badge-cancelled-solid">CANCELLED</span>
+                    </ng-container>
+
+                    <!-- Else Case: Show Calculated Status (Wait/Ready) -->
+                    <ng-template #activeStatus>
+                      <ng-container *ngIf="getProcessStatus(item) as status">
+                        <span class="badge" [className]="'badge ' + status.color"
+                          style="font-size: 0.75rem; padding: 3px 8px; border: 1px solid;">
+                          <ng-container>
+                            {{ status.label }}
+                          </ng-container>
+                        </span>
+                      </ng-container>
+                    </ng-template>
+
+                  </div>
+                </div>
+
+                <!-- 7-12. Data columns -->
+                <div class="grid-cell">{{ item.mcType ?? '-' }}</div>
+                <div class="grid-cell">{{ item.barType ?? '-' }}</div>
+                <div class="grid-cell">{{ item.division }}</div>
+                <div class="grid-cell">{{ item.fac ?? '-' }}</div>
+                <div class="grid-cell">{{ item.process ?? '-' }}</div>
+                <div class="grid-cell">{{ item.partBefore ?? '-' }}</div>
+                <div class="grid-cell">{{ item.mcNo ?? '-' }}</div>
+
+                <!-- 13. Part No -->
+                <div class="grid-cell" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+                  <span>{{ item.partNo ?? '-' }}</span>
+                  <i *ngIf="item.requestNo || item.groupId" class="bi bi-upc-scan text-primary" style="cursor: pointer; font-size: 0.95rem;" title="ดูบาร์โค้ด (View Barcode)" (click)="openBarcode(item.requestNo || item.groupId)"></i>
+                </div>
+
+                <!-- 14. QTY -->
+                <div class="grid-cell text-center">{{ item.qty ?? '-' }}</div>
+                <!-- 15. Time -->
+                <div class="grid-cell">{{ item.time ?? '-' }}</div>
+                <!-- 16. MC QTY -->
+                <div class="grid-cell text-center">{{ item.mcQty ?? '-' }}</div>
+
+                <!-- 17. Comment -->
+                <div class="grid-cell cell-comment">{{ item.comment ?? '-' }}</div>
+
+                <!-- 17. Path DWG -->
+                <div class="grid-cell text-center" [ngClass]="{'en-path-hover': selectedDepartment === 'EN' && shouldShowDwgIcon(item) && item.pathDwg && item.pathDwg.includes('\\pbp083\\')}">
+                  <ng-container *ngIf="shouldShowDwgIcon(item); else noDwg">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px;" [title]="item.pathDwg">
+                      <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #1d4ed8; cursor: pointer;" (click)="openFile(item.pathDwg, item.requestNo || item.groupId)"></i>
+                    </div>
+                  </ng-container>
+                  <ng-template #noDwg>
+                    <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+                  </ng-template>
+                </div>
+
+                <!-- 18. Path Layout -->
+                <div class="grid-cell text-center" [ngClass]="{'en-path-hover': selectedDepartment === 'EN' && shouldShowLayoutIcon(item) && item.pathLayout && item.pathLayout.includes('\\pbp083\\')}">
+                  <ng-container *ngIf="shouldShowLayoutIcon(item); else noLayout">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px;" [title]="item.pathLayout">
+                      <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #1d4ed8; cursor: pointer;" (click)="openFile(item.pathLayout, item.requestNo || item.groupId)"></i>
+                    </div>
+                  </ng-container>
+                  <ng-template #noLayout>
+                    <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+                  </ng-template>
+                </div>
+
+                <!-- 19. IIQC -->
+                <div class="grid-cell text-center">
+                  <ng-container *ngIf="item.iiqc && item.iiqc.trim() !== '-'; else noIiqc">
+                    <i class="bi bi-file-earmark-check-fill" style="font-size: 1.2rem; color: #22c55e; cursor: pointer;"
+                      [title]="item.iiqc" (click)="openFile(item.iiqc, item.requestNo || item.groupId)"></i>
+                  </ng-container>
+                  <ng-template #noIiqc>
+                    <i class="bi bi-dash-lg" style="color: #cbd5e1;"></i>
+                  </ng-template>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+
+        </ng-container>
+      </ng-container>
+
+      <!-- Empty State: only show when not loading and no data -->
+      <div class="grid-row grid-empty" *ngIf="!isLoading && filteredPlanList.length === 0">
+        <div class="grid-cell" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #64748b;">No data
+          found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Pagination Bar ===== -->
+  <div class="pagination-bar" *ngIf="displayTotalCount > 0">
+    <span class="page-info">Records: {{ displayStartRecord }}&ndash;{{ displayEndRecord }} of {{ displayTotalCount }}</span>
+    <div class="page-controls">
+      <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <button *ngIf="currentPage > 3" class="page-btn" (click)="goToPage(1)">1</button>
+      <span *ngIf="currentPage > 4" class="page-ellipsis">&#8230;</span>
+      <button *ngFor="let p of displayPageNumbers" class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{
+        p }}</button>
+      <span *ngIf="currentPage < displayTotalPages - 3" class="page-ellipsis">&#8230;</span>
+      <button *ngIf="currentPage < displayTotalPages - 2" class="page-btn" (click)="goToPage(displayTotalPages)">{{ displayTotalPages
+        }}</button>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === displayTotalPages">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+    <span class="page-loading" *ngIf="isLoading"><i class="bi bi-arrow-repeat spin-icon"></i></span>
+  </div>
+
+  <!-- Floating Batch Action Bar for EN Department -->
+  <div class="floating-batch-bar" *ngIf="selectedDepartment === 'EN' && selectedSubTab === 'Required' && getSelectedEnCount() > 0">
+    <div class="batch-bar-inner">
+      <div class="batch-bar-left">
+        <span class="batch-badge">{{ getSelectedEnCount() }}</span>
+        <span class="batch-text">รายการที่เลือก</span>
+      </div>
+      <div class="batch-bar-actions">
+        <button type="button" class="btn-batch-add" (click)="openBatchAddPathModal()">
+          <i class="bi bi-folder-plus"></i> ADD PATH
+        </button>
+        <button type="button" class="btn-batch-clear" (click)="clearEnSelection()">
+          <i class="bi bi-x"></i> ยกเลิก
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-backdrop" *ngIf="isEditModalOpen">
+  <div class="modal-content" [class.modal-en-content]="selectedDepartment === 'EN'">
+    <div class="modal-header">
+      <h3 *ngIf="selectedDepartment === 'PC'">Edit Plan (Rev {{editData.revision}})</h3>
+      <h3 *ngIf="selectedDepartment === 'EN' || selectedDepartment === 'QC'">
+        Add Attachments
+        <span *ngIf="selectedDepartment === 'EN' && isEnBatchMode && enBatchItems.length > 0" class="badge-batch-count ms-2">
+          เลือก {{ enBatchItems.length }} รายการ
+        </span>
+      </h3>
+      <button class="btn-close" (click)="closeEditModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" *ngIf="selectedDepartment !== 'EN'">
+
+        <!-- PC ONLY FIELDS -->
+        <ng-container *ngIf="selectedDepartment === 'PC'">
+
+          <!-- Complete Lock Notice — Slim Banner -->
+          <div class="form-group full-width" *ngIf="isEditLockedByComplete(editData)"
+            style="background: linear-gradient(90deg,#fff7ed,#fffbf5); border-left: 3px solid #f97316; border-radius: 4px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #9a3412; margin-bottom: 4px;">
+            <i class="bi bi-lock-fill" style="font-size: 0.85rem; flex-shrink: 0;"></i>
+            <span>ข้อมูลบางส่วนถูกจำกัดเนื่องจากอยู่ในกระบวนการเบิก </span>
+          </div>
+
+          <!-- Row 1: Date | Part No. | Part Before -->
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-calendar3"></i> Date</label>
+            <mat-form-field appearance="outline" style="width: 100%;" subscriptSizing="dynamic">
+              <input matInput [matDatepicker]="picker" [(ngModel)]="editData.dateObj" placeholder="DD/MM/YYYY"
+                (click)="picker.open()">
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-upc-scan"></i> Part No.
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1"
+                style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
+            <ng-select [items]="modalPartNoList" [(ngModel)]="editData.partNo"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part no."
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
+            </ng-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-arrow-left-right"></i> Part Before
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1"
+                style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
+            <ng-select [items]="modalPartBeforeList" [(ngModel)]="editData.partBefore"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select part before"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
+            </ng-select>
+          </div>
+
+          <!-- Row 2: Process | Machine Type | Bar Type -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-gear"></i> Process
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1"
+                style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
+            <ng-select [items]="modalProcessList" [(ngModel)]="editData.process"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select process"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
+            </ng-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-cpu"></i> Machine Type
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1"
+                style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
+            <ng-select [items]="modalMachineTypes" [(ngModel)]="editData.mcType"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select type"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
+            </ng-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <i class="bi bi-bar-chart-line"></i> Bar Type
+              <i *ngIf="isEditLockedByComplete(editData)" class="bi bi-lock-fill ms-1"
+                style="font-size:0.7rem;color:#f97316;vertical-align:middle;"></i>
+            </label>
+            <ng-select [items]="modalBarTypeList" [(ngModel)]="editData.barType"
+              [addTag]="!isEditLockedByComplete(editData)" addTagText="Add: " placeholder="Select bar type"
+              [clearable]="true" class="edit-modal-select w-100" [readonly]="isEditLockedByComplete(editData)"
+              [ngClass]="{'locked-field': isEditLockedByComplete(editData)}">
+            </ng-select>
+          </div>
+
+          <!-- Row 3: Facility | MC No. | QTY -->
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-building"></i> Facility</label>
+            <ng-select [items]="modalFacList" [(ngModel)]="editData.fac" placeholder="Select or type..." [addTag]="true"
+              addTagText="Add: " [clearable]="true" class="edit-modal-select">
+            </ng-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-hash"></i> MC No.</label>
+            <input type="text" class="form-input" [(ngModel)]="editData.mcNo" placeholder="e.g. MC-001">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-clock"></i> QTY</label>
+            <input type="number" class="form-input" [(ngModel)]="editData.qty" placeholder="0" min="0">
+          </div>
+
+          <!-- Row 4: Time | Comment -->
+          <div class="form-group">
+            <label class="form-label"><i class="bi bi-clock"></i> Time (hrs)</label>
+            <input type="number" class="form-input" [(ngModel)]="editData.time" placeholder="0.0" step="0.5" min="0">
+          </div>
+
+          <div class="form-group span-2">
+            <label class="form-label"><i class="bi bi-chat-left-text"></i> Comment</label>
+            <textarea class="form-input form-textarea-small" [(ngModel)]="editData.comment" name="comment"
+              placeholder="Optional comments..." rows="1"></textarea>
+          </div>
+
+        </ng-container>
+
+        <!-- QC Fields (IIQC) -->
+        <ng-container *ngIf="selectedDepartment === 'QC' || selectedDepartment === 'Gague'">
+          <div class="form-group full-width">
+            <label class="form-label"><i class="bi bi-file-earmark-check"></i> IIQC Path</label>
+            <input type="text" class="form-input" [(ngModel)]="editData.iiqc" name="iiqc" placeholder="P:\QC\IIQC\...">
+          </div>
+        </ng-container>
+
+      </div>
+
+      <!-- Engineer Fields (Path) with Document Cards Layout -->
+      <ng-container *ngIf="selectedDepartment === 'EN'">
+
+        <!-- Auto-path loading banner -->
+        <div class="en-auto-path-banner" *ngIf="enAutoPathLoading"
+          style="background:linear-gradient(90deg,#eff6ff,#f0f9ff);border-left:3px solid #3b82f6;border-radius:6px;padding:8px 14px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#1d4ed8;margin-bottom:12px;width:100%;box-sizing:border-box;">
+          <span class="spinner-border spinner-border-sm" style="width:14px;height:14px;border-width:2px;color:#3b82f6;"></span>
+          <span>กำลังค้นหาไฟล์บน Network Share อัตโนมัติ…</span>
+        </div>
+
+        <div class="en-attachments-wrapper">
+          <div class="cards-grid">
+
+            <!-- ==================== LEFT CARD: DRAWING ==================== -->
+            <div class="attachment-card card-drawing">
+              <!-- Card Header -->
+              <div class="card-header">
+                <div class="card-header-left">
+                  <div class="card-icon-badge badge-blue">
+                    <i class="bi bi-file-earmark-code"></i>
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title">DRAWING</div>
+                    <div class="card-subtitle">ไฟล์แบบงาน Drawing</div>
+                  </div>
+                </div>
+                <button type="button" class="btn-card-preview" (click)="previewEnFile('DRAWING')" title="Preview Drawing">
+                  <i class="bi bi-eye"></i> Preview
+                </button>
+              </div>
+
+              <!-- Card Body -->
+              <div class="card-body">
+                <!-- Path -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-folder2-open text-blue-500"></i> Path
+                  </label>
+                  <input type="text" class="card-input" [(ngModel)]="enDwgPaths[0]"
+                    (input)="syncEnPaths(); onPathFieldManualInput('dwg')" placeholder="P:\Drawing\...">
+                </div>
+
+                <!-- Rev -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-arrow-repeat text-slate-500"></i> Rev
+                  </label>
+                  <input type="text" class="card-input input-center" [(ngModel)]="enDwgRevs[0]" placeholder="">
+                </div>
+
+                <!-- MC Quantity -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-layers text-slate-500"></i> MC Quantity
+                  </label>
+                  <div class="qty-input-group">
+                    <input type="number" class="card-input qty-input input-center" [(ngModel)]="enDwgQty"
+                      (ngModelChange)="onEnMcQtyChange('dwg', $event)" placeholder="" min="0">
+                    <span class="qty-unit-tag">ชิ้น</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== RIGHT CARD: LAYOUT ==================== -->
+            <div class="attachment-card card-layout">
+              <!-- Card Header -->
+              <div class="card-header">
+                <div class="card-header-left">
+                  <div class="card-icon-badge badge-indigo">
+                    <i class="bi bi-grid-3x3"></i>
+                  </div>
+                  <div class="card-title-group">
+                    <div class="card-title">LAYOUT</div>
+                    <div class="card-subtitle">ไฟล์แบบ Layout เครื่องจักร</div>
+                  </div>
+                </div>
+                <button type="button" class="btn-card-preview" (click)="previewEnFile('LAYOUT')" title="Preview Layout">
+                  <i class="bi bi-eye"></i> Preview
+                </button>
+              </div>
+
+              <!-- Card Body -->
+              <div class="card-body">
+                <!-- Path -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-folder2-open text-indigo-500"></i> Path
+                  </label>
+                  <input type="text" class="card-input" [(ngModel)]="enLayoutPaths[0]"
+                    (input)="syncEnPaths(); onPathFieldManualInput('layout')" placeholder="P:\Layout\...">
+                </div>
+
+                <!-- Rev -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-arrow-repeat text-slate-500"></i> Rev
+                  </label>
+                  <input type="text" class="card-input input-center" [(ngModel)]="enLayoutRevs[0]" placeholder="">
+                </div>
+
+                <!-- MC Quantity -->
+                <div class="field-group">
+                  <label class="field-label">
+                    <i class="bi bi-layers text-slate-500"></i> MC Quantity
+                  </label>
+                  <div class="qty-input-group">
+                    <input type="number" class="card-input qty-input input-center" [(ngModel)]="enLayoutQty"
+                      (ngModelChange)="onEnMcQtyChange('layout', $event)" placeholder="" min="0">
+                    <span class="qty-unit-tag">ชิ้น</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </ng-container>
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-clear" *ngIf="selectedDepartment === 'EN'" (click)="clearEnModal()" title="Clear All Fields">
+        <i class="bi bi-trash3"></i> Clear
+      </button>
+      <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+      <button class="btn-save" (click)="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-backdrop" *ngIf="isHistoryModalOpen">
+  <div class="modal-content" style="max-width: 900px;"> <!-- Wider for history -->
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+        <i class="bi bi-clock-history text-blue-500"></i> Revision History
+        <span style="font-size: 0.95rem; font-weight: 500; color: #64748b; margin-left: 8px;">(Part:
+          {{selectedHistoryItem.partNo}})</span>
+      </h3>
+      <button class="btn-close" (click)="closeHistoryModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="table-container" style="box-shadow: none; border: 1px solid #e2e8f0; max-height: 500px;">
+        <table>
+          <thead>
+            <tr>
+              <th><i class="bi bi-arrow-counterclockwise" style="color: #94a3b8; margin-right: 4px;"></i> Rev</th>
+              <th><i class="bi bi-calendar3" style="color: #94a3b8; margin-right: 4px;"></i> Plan Date</th>
+              <th><i class="bi bi-cpu" style="color: #94a3b8; margin-right: 4px;"></i> MC Type</th>
+              <th><i class="bi bi-bar-chart-line" style="color: #94a3b8; margin-right: 4px;"></i> Bar Type</th>
+              <th><i class="bi bi-building" style="color: #94a3b8; margin-right: 4px;"></i> Fac</th>
+              <th><i class="bi bi-gear" style="color: #94a3b8; margin-right: 4px;"></i> Process</th>
+              <th><i class="bi bi-hash" style="color: #94a3b8; margin-right: 4px;"></i> MC No</th>
+              <th><i class="bi bi-upc-scan" style="color: #94a3b8; margin-right: 4px;"></i> Part No</th>
+              <th><i class="bi bi-clock" style="color: #94a3b8; margin-right: 4px;"></i> QTY</th>
+              <th><i class="bi bi-chat-left-text" style="color: #94a3b8; margin-right: 4px;"></i> Comment</th>
+              <!-- Status Column Removed -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of historyList; let i = index" [class.history-latest]="i === 0"
+              [class.history-old]="i > 0">
+              <td class="text-center"><strong>{{ h.Revision }}</strong></td>
+              <td>{{ h.date }}</td>
+              <td>{{ h.MC_Type }}</td>
+              <td>{{ h.Bar_Type }}</td>
+              <td>{{ h.Facility }}</td>
+              <td>{{ h.Process }}</td>
+              <td>{{ h.MC_No }}</td>
+              <td>{{ h.PartNo }}</td>
+              <td>{{ h.QTY }}</td>
+              <td>{{ h.Comment }}</td>
+              <!-- Status Content Removed -->
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeHistoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Tooling Request Details Modal (PD Tab) ===== -->
+<div class="modal-backdrop" *ngIf="isToolingRequestModalOpen">
+  <div class="modal-content" style="max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-header"
+      style="flex-direction: column; align-items: stretch; gap: 1rem; border-bottom: none; padding-bottom: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0; font-size: 1.4rem; font-weight: 800; color: #1e293b;">
+          Tooling Request Details
+        </h3>
+        <button class="btn-close" (click)="closeToolingRequestModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div *ngIf="toolingRequestHeader"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; background: #f8fafc; padding: 16px 20px; border-radius: 8px; border: 1px solid #e2e8f0; align-items: center;">
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Part
+            No.</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.partNo }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Process</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.process }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MC</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.mcType }} <span
+              *ngIf="toolingRequestHeader.mcNo && toolingRequestHeader.mcNo !== '-'">#{{ toolingRequestHeader.mcNo
+              }}</span></span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">FAC</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.fac }}</span>
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span
+            style="font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Requester</span>
+          <span style="font-size: 1rem; font-weight: 700; color: #0f172a;">{{ toolingRequestHeader.requester }}</span>
+        </div>
+      </div>
+      <div *ngIf="!toolingRequestHeader" style="text-align: center; color: #64748b; padding: 1rem;">
+        (No request data found)
+      </div>
+    </div>
+
+    <div class="modal-body" style="overflow-y: auto; flex: 1;">
+
+      <!-- Loading State -->
+      <div *ngIf="toolingRequestLoading" style="text-align:center; padding: 3rem; color: #64748b;">
+        <div style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="bi bi-arrow-repeat"
+            style="animation: spin 1s linear infinite;"></i></div>
+        <p>Loading request data...</p>
+      </div>
+
+      <ng-container *ngIf="!toolingRequestLoading">
+
+        <!-- ===== SECTION 1: Cutting Tool ===== -->
+        <div style="margin-bottom: 1.5rem;">
+          <div
+            style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; padding-bottom:8px; border-bottom:2px solid #3b82f6;">
+            <span style="font-weight:800; font-size:1.1rem; color:#1e293b;">Cutting Tool</span>
+            <span class="badge"
+              style="background:#dbeafe; color:#1d4ed8; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight: 700;">{{
+              toolingCuttingList.length }} ITEMS</span>
+          </div>
+
+          <div class="table-container" style="box-shadow:none; border:1px solid #e2e8f0;"
+            *ngIf="toolingCuttingList && toolingCuttingList.length > 0; else noCutting">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                  <th>SPEC</th>
+                  <th>Item No.</th>
+                  <th style="text-align:center;">Req QTY</th>
+                  <th style="text-align:center;">Issue QTY</th>
+                  <th>Item Name</th>
+                  <th>Remark</th>
+                  <th>Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of toolingCuttingList">
+                  <td>
+                    <span class="badge" [style]="getRequestStatusStyle(row.Status)"
+                      style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                      {{ (row.Status | uppercase) === 'WAITING' ? 'Wait PH' : row.Status }}
+                    </span>
+                  </td>
+                  <td>{{ row.DueDate | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ row.SPEC }}</td>
+                  <td>{{ row.ItemNo }}</td>
+                  <td style="text-align:center;">{{ row.Req_QTY }}</td>
+                  <td style="text-align:center;">{{ row.IssueQTY }}</td>
+                  <td>{{ row.ItemName || '-' }}</td>
+                  <td>{{ row.Remark || '-' }}</td>
+                  <td>{{ row.DateComplete ? (row.DateComplete | date:'dd/MM/yyyy') : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noCutting>
+            <div
+              style="text-align:center; padding:1.5rem; color:#94a3b8; background:#f8fafc; border-radius:8px; border:1px dashed #e2e8f0;">
+              <i class="bi bi-inbox" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+              No Cutting Tool Request Data
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- ===== SECTION 2: Setup Tool ===== -->
+        <div>
+          <div
+            style="display:flex; align-items:center; gap:8px; margin-bottom:0.75rem; padding-bottom:8px; border-bottom:2px solid #8b5cf6;">
+            <span style="font-weight:800; font-size:1.1rem; color:#1e293b;">Setup Tool</span>
+            <span class="badge"
+              style="background:hsl(251, 91%, 95%); color:#7c3aed; padding:2px 8px; border-radius:999px; font-size:0.75rem; font-weight: 700;">{{
+              toolingSetupList.length }} ITEMS</span>
+          </div>
+
+          <div class="table-container" style="box-shadow:none; border:1px solid #e2e8f0;"
+            *ngIf="toolingSetupList && toolingSetupList.length > 0; else noSetup">
+            <table>
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Due Date</th>
+                  <th>SPEC</th>
+                  <th>Item No.</th>
+                  <th style="text-align:center;">Req QTY</th>
+                  <th style="text-align:center;">Issue QTY</th>
+                  <th>Item Name</th>
+                  <th>Remark</th>
+                  <th>Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of toolingSetupList">
+                  <td>
+                    <span class="badge" [style]="getRequestStatusStyle(row.Status)"
+                      style="text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                      {{ (row.Status | uppercase) === 'WAITING' ? 'Wait PH' : row.Status }}
+                    </span>
+                  </td>
+                  <td>{{ row.DueDate | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ row.SPEC }}</td>
+                  <td>{{ row.ItemNo }}</td>
+                  <td style="text-align:center;">{{ row.Req_QTY }}</td>
+                  <td style="text-align:center;">{{ row.IssueQTY }}</td>
+                  <td>{{ row.ItemName || '-' }}</td>
+                  <td>{{ row.Remark || '-' }}</td>
+                  <td>{{ row.DateComplete ? (row.DateComplete | date:'dd/MM/yyyy') : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noSetup>
+            <div
+              style="text-align:center; padding:1.5rem; color:#94a3b8; background:#f8fafc; border-radius:8px; border:1px dashed #e2e8f0;">
+              <i class="bi bi-inbox" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+              No Setup Tool Request Data
+            </div>
+          </ng-template>
+        </div>
+
+      </ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeToolingRequestModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print Modal -->
+<div class="modal-backdrop" *ngIf="isPrintModalOpen">
+  <div class="modal-content" style="max-width: 950px; width: 85vw;">
+    <div class="modal-header">
+      <h3 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+        <i class="bi bi-printer text-gray-700"></i> Print Preview
+      </h3>
+      <button class="btn-close" (click)="closePrintModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" *ngIf="selectedItemForPrint">
+
+        <!-- ── Info row: Part No · MC Type · MC No (ratio 2 : 1.5 : 1) ── -->
+        <!-- Plain flex div to prevent global vertical stacking. Tightly packed. -->
+        <div
+          style="grid-column: span 3; display: flex; flex-direction: row; gap: 12px; align-items: flex-end; margin-bottom: 0;">
+
+          <div style="flex: 2; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <label class="form-label" style="margin: 0; font-size: 0.75rem;"><i class="bi bi-upc-scan"></i> Part
+              No.</label>
+            <input type="text" class="form-input" [value]="selectedItemForPrint.partNo" readonly
+              style="background-color: #f1f5f9; font-weight: 600; cursor: default; width: 100%; margin: 0; padding: 4px 8px; height: 32px; font-size: 0.85rem;">
+          </div>
+
+          <div style="flex: 1.5; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <label class="form-label" style="margin: 0; font-size: 0.75rem;"><i class="bi bi-cpu"></i> MC Type</label>
+            <input type="text" class="form-input" [value]="selectedItemForPrint.mcType" readonly
+              style="background-color: #f1f5f9; font-weight: 600; cursor: default; width: 100%; margin: 0; padding: 4px 8px; height: 32px; font-size: 0.85rem;">
+          </div>
+
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <label class="form-label" style="margin: 0; font-size: 0.75rem;"><i class="bi bi-hash"></i> MC No.</label>
+            <input type="text" class="form-input" [value]="selectedItemForPrint.mcNo" readonly
+              style="background-color: #f1f5f9; font-weight: 600; cursor: default; width: 100%; margin: 0; padding: 4px 8px; height: 32px; font-size: 0.85rem;">
+          </div>
+
+        </div>
+
+        <!-- ── Select Document Type: Segmented Control ── -->
+        <!-- Side-by-side title and buttons to crush vertical height -->
+        <div
+          style="grid-column: span 3; margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <label class="form-label" style="font-size: 0.82rem; color: #475569; margin: 0;">
+            <i class="bi bi-file-earmark-pdf" style="color: #3b82f6;"></i> Select Document Type:
+          </label>
+          <div style="display: flex; background: #e2e8f0; padding: 3px; border-radius: 6px; gap: 2px; width: 68%;">
+
+            <!-- Drawing -->
+            <button (click)="selectPrintType('pathDwg')"
+              [style.background]="printType === 'pathDwg' ? 'white' : 'transparent'"
+              [style.box-shadow]="printType === 'pathDwg' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+              style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 8px; flex-direction: row; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+              <i class="bi bi-file-earmark-image" style="font-size: 1rem; color: #3b82f6; flex-shrink: 0;"></i>
+              <span style="font-weight: 600; font-size: 0.8rem; color: #334155;">Drawing</span>
+            </button>
+
+            <!-- Layout -->
+            <button (click)="selectPrintType('pathLayout')"
+              [style.background]="printType === 'pathLayout' ? 'white' : 'transparent'"
+              [style.box-shadow]="printType === 'pathLayout' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+              style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 8px; flex-direction: row; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+              <i class="bi bi-grid-3x3" style="font-size: 1rem; color: #6366f1; flex-shrink: 0;"></i>
+              <span style="font-weight: 600; font-size: 0.8rem; color: #334155;">Layout</span>
+            </button>
+
+            <!-- IIQC -->
+            <button (click)="selectPrintType('iiqc')"
+              [style.background]="printType === 'iiqc' ? 'white' : 'transparent'"
+              [style.box-shadow]="printType === 'iiqc' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'"
+              style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 8px; flex-direction: row; border: none; border-radius: 4px; cursor: pointer; transition: all 0.2s;">
+              <i class="bi bi-shield-check" style="font-size: 1rem; color: #22c55e; flex-shrink: 0;"></i>
+              <span style="font-weight: 600; font-size: 0.8rem; color: #334155;">IIQC Doc</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- ── PDF Preview — read-only inspection (toolbar hidden to prevent bypass printing) ── -->
+        <div style="grid-column: span 3; margin-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong style="font-size: 0.85rem; color: #475569;">Preview</strong>
+              <button *ngIf="previewUrl" (click)="openFullScreenPreview()" class="btn-zoom" title="Full Screen View" style="padding: 3px 8px; border: 1px solid #bfdbfe; border-radius: 6px; background: #eff6ff; color: #2563eb; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <i class="bi bi-eye-fill"></i>
+              </button>
+            </div>
+            <!-- Zoom controls only — no external open / print to protect counter -->
+            <div class="zoom-controls" *ngIf="previewUrl">
+              <button (click)="zoomOut()" class="btn-zoom" title="Zoom Out"><i class="bi bi-dash"></i></button>
+              <span style="margin: 0 8px; font-weight: 600; min-width: 40px; text-align: center; font-size: 0.82rem;">
+                {{ (previewZoom * 100) | number:'1.0-0' }}%
+              </span>
+              <button (click)="zoomIn()" class="btn-zoom" title="Zoom In"><i class="bi bi-plus"></i></button>
+              <button (click)="resetZoom()" class="btn-zoom ms-2" title="Reset"><i
+                  class="bi bi-arrow-counterclockwise"></i></button>
+            </div>
+          </div>
+
+          <!-- Tall container: scrollable zoom wrapper + PDF iframe, toolbar hidden -->
+          <div #pdfScrollContainer (mousedown)="onPanStart($event, pdfScrollContainer)"
+            (mousemove)="onPanMove($event, pdfScrollContainer)" (mouseup)="onPanEnd()" (mouseleave)="onPanEnd()" (wheel)="onWheelZoom($event)"
+            [style.cursor]="isPanning ? 'grabbing' : (previewZoom > 1 ? 'grab' : 'default')"
+            style="height: 65vh; border: 1px solid #e2e8f0; border-radius: 6px; overflow: auto; background: #f3f4f6; position: relative; display: flex; justify-content: center; align-items: flex-start; user-select: none;">
+
+            <div *ngIf="previewUrl" [style.transform]="'scale(' + previewZoom + ')'"
+              style="transform-origin: top center; transition: all 0.2s ease-out; width: 100%; height: 100%; min-width: 100%; min-height: 100%; position: relative;">
+
+              <!-- Transparent overlay to intercept mouse events and prevent the iframe from swallowing them -->
+              <div *ngIf="previewZoom > 1" style="position: absolute; inset: 0; z-index: 10; background: transparent;">
+              </div>
+
+              <iframe [src]="previewUrl" width="100%" height="100%"
+                style="border: none; display: block; background: white;">
+              </iframe>
+            </div>
+
+            <div *ngIf="!previewUrl"
+              style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #94a3b8; flex-direction: column; gap: 8px;">
+              <i class="bi bi-file-earmark-pdf" style="font-size: 2rem;"></i>
+              <span style="font-size: 0.88rem;">Select a document type to preview</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="color: red; font-weight: bold; margin-right: auto; font-size: 0.9em;">
+        กรุณาเตรียมเครื่องพิมพ์ให้พร้อมก่อนกดสั่งพิมพ์<br>
+        <span style="color: #666; font-weight: normal; font-size: 0.85em;">
+          หมายเหตุ: กรุณาระบุจำนวนชุดที่ต้องการพิมพ์เอง ในหน้าต่างตั้งค่าการพิมพ์
+        </span>
+      </div>
+      <button class="btn-cancel" (click)="closePrintModal()">Close</button>
+      <button class="btn-save" (click)="printPdf()">Print</button>
+    </div>
+  </div>
+</div>
+
+<!-- Full Screen Preview Modal (No Print Button) -->
+<div class="modal-backdrop" *ngIf="isFullScreenPreviewOpen" style="z-index: 999999 !important;">
+  <div class="modal-content" style="width: 95vw; height: 95vh; max-width: none; display: flex; flex-direction: column; padding: 0;">
+    <div class="modal-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; background: #fff;">
+      <h3 style="display: flex; align-items: center; gap: 10px; margin: 0; flex: 1;">
+        <i class="bi bi-eye text-gray-700"></i> Full Screen Preview
+      </h3>
+      
+      <button (click)="closeFullScreenPreview()" style="background: #fee2e2; border: 1px solid #fca5a5; font-size: 1.2rem; cursor: pointer; color: #ef4444; width: 36px; height: 36px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;" title="Close Preview"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="modal-body" style="flex: 1; padding: 0; background: #525659; position: relative; width: 100%; height: 100%;">
+      
+      <!-- Wrapper stays 100% width and height, native zoom handles the rest -->
+      <div *ngIf="fullScreenPreviewUrl" style="width: 100%; height: 100%; position: relative;">
+        
+        <iframe [src]="fullScreenPreviewUrl" style="border: none; display: block; background: transparent; width: 100%; height: 100%;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+       EXPORT CHOICE MODAL
+       ═══════════════════════════════════════════════ -->
+<div class="export-modal-backdrop" *ngIf="showExportModal" (click)="closeExportModal()">
+  <div class="export-modal-container" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="export-modal-header">
+      <div class="export-modal-title">
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        <h3>Export Plan Data</h3>
+      </div>
+      <button class="export-modal-close" (click)="closeExportModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Choice Cards -->
+    <div class="export-choice-grid">
+      <div class="export-card" [class.selected]="exportMode === 'current'" (click)="exportMode = 'current'">
+        <div class="export-card-icon current">
+          <i class="bi bi-eye-fill"></i>
+        </div>
+        <div class="export-card-info">
+          <h4>Current View</h4>
+          <p>Export the current filtered list</p>
+          <span class="export-sub">{{ filteredPlanList.length }} visible rows</span>
+        </div>
+        <div class="export-card-check" *ngIf="exportMode === 'current'">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+      </div>
+
+      <div class="export-card" [class.selected]="exportMode === 'history'" (click)="exportMode = 'history'">
+        <div class="export-card-icon history">
+          <i class="bi bi-clock-history"></i>
+        </div>
+        <div class="export-card-info">
+          <h4>History Export</h4>
+          <p>Export all records by month</p>
+          <span class="export-sub">Queries the full database</span>
+        </div>
+        <div class="export-card-check" *ngIf="exportMode === 'history'">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month/Year Picker (expands for History) -->
+    <div class="export-month-picker" *ngIf="exportMode === 'history'">
+      <div class="picker-label">
+        <i class="bi bi-calendar3"></i> Select Month &amp; Year
+      </div>
+      <div class="picker-row">
+        <div class="picker-field">
+          <label>Month</label>
+          <select [(ngModel)]="exportMonth" class="picker-select">
+            <option *ngFor="let m of exportMonths" [value]="m.value">{{ m.label }}</option>
+          </select>
+        </div>
+        <div class="picker-field">
+          <label>Year</label>
+          <select [(ngModel)]="exportYear" class="picker-select">
+            <option *ngFor="let y of exportYears" [value]="y">{{ y }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="export-modal-footer">
+      <button class="export-btn-cancel" (click)="closeExportModal()">Cancel</button>
+      <button class="export-btn-confirm" [disabled]="!exportMode || isExporting"
+        (click)="exportMode === 'current' ? doCurrentExport() : doHistoryExport()">
+        <ng-container *ngIf="!isExporting">
+          <i class="bi bi-download"></i> Download Excel
+        </ng-container>
+        <ng-container *ngIf="isExporting">
+          <i class="bi bi-arrow-repeat animate-spin"></i> Exporting...
+        </ng-container>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Barcode Modal -->
+<div class="modal-backdrop fade show" *ngIf="showBarcodeModal" (click)="closeBarcodeModal()" style="z-index:1040;"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="showBarcodeModal" style="z-index:1050;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 560px;">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      <div class="modal-header bg-light border-bottom px-4">
+        <h5 class="modal-title text-primary fw-bold"><i class="bi bi-upc-scan me-2"></i> บาร์โค้ด (Barcode)</h5>
+        <button type="button" class="btn-close" (click)="closeBarcodeModal()"></button>
+      </div>
+      <div class="modal-body text-center py-4 px-4">
+        <p class="text-muted mb-1 small fw-semibold">รหัสเอกสาร / RequestNo:</p>
+        <h4 class="fw-bold text-dark mb-3" style="letter-spacing: 0.5px; word-break: break-all;">{{ selectedBarcode }}</h4>
+        <div class="barcode-container p-3 bg-white border rounded-3 shadow-sm d-inline-block" style="max-width: 100%; overflow-x: auto;">
+          <svg #modalBarcodeSvg style="max-width: 100%; height: auto; display: block; margin: 0 auto;"></svg>
+        </div>
+      </div>
+      <div class="modal-footer bg-light border-top justify-content-center py-3">
+        <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold" (click)="closeBarcodeModal()">ปิด (Close)</button>
+      </div>
+    </div>
+  </div>
+</div>

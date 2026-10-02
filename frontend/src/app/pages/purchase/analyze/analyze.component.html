@@ -1,0 +1,281 @@
+<div class="content-area">
+  <div class="header-group">
+    <div class="header">
+      <h1>Graph Analyze</h1>
+    </div>
+    <div class="button-group"></div>
+  </div>
+
+  <!-- Global Filter Panel -->
+  <div class="global-filter-card">
+    <div class="filter-panel">
+      <div class="filter-group">
+        <label><i class="bi bi-diagram-3"></i> Division</label>
+        <select [(ngModel)]="globalDivision" (change)="applyGlobalFilters()">
+          <option value="ALL">All Divisions</option>
+          <option *ngFor="let d of Divisions" [value]="d">{{ getDivisionLabel(d) }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-calendar3"></i> Date Range</label>
+        <div class="date-range">
+          <input type="date" [(ngModel)]="globalDateStart" (change)="applyGlobalFilters()">
+          <span class="separator">-</span>
+          <input type="date" [(ngModel)]="globalDateEnd" (change)="applyGlobalFilters()">
+          <button class="btn-clear" (click)="resetGlobalFilters()"
+            *ngIf="globalDateStart || globalDateEnd || globalDivision !== 'ALL'">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+
+    <!-- Card 1: Total Cost -->
+    <div class="summary-card summary-card--green">
+      <div class="card-icon"><i class="bi bi-cash-stack"></i></div>
+      <div class="card-title">ต้นทุนรวมทั้งหมด (Total Cost)</div>
+      <div class="card-value">฿ {{ totalCostTHB | number:'1.2-2' }}</div>
+    </div>
+
+    <!-- Card 2: Most Expensive Tool -->
+    <div class="summary-card summary-card--orange">
+      <div class="card-icon"><i class="bi bi-tools"></i></div>
+      <div class="card-title">Tooling ที่ใช้แพงสุด (Most Expensive)</div>
+      <div class="card-value"
+        [title]="mostExpensiveTool.name + (mostExpensiveTool.itemName ? ' - ' + mostExpensiveTool.itemName : '')">{{
+        mostExpensiveTool.name }}</div>
+      <div class="card-sub" *ngIf="mostExpensiveTool.itemName"
+        style="opacity:0.85; font-size:0.8rem; margin-bottom:0.2rem;">{{ mostExpensiveTool.itemName }}</div>
+      <div class="card-sub">มูลค่ารวม: ฿ {{ mostExpensiveTool.cost | number:'1.2-2' }}</div>
+    </div>
+
+    <!-- Card 3: Most Used Case -->
+    <div class="summary-card summary-card--blue">
+      <div class="card-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="card-title">Case ที่เบิกเยอะสุด (Most Used)</div>
+      <div class="card-value" [title]="mostUsedCase.name">{{ mostUsedCase.name }}</div>
+      <div class="card-sub">จำนวนเบิกใช้: {{ mostUsedCase.count | number:'1.0-0' }} ชิ้น</div>
+    </div>
+
+  </div>
+
+  <!-- ═══ Trend Analysis (Line Chart) ═══ -->
+  <div class="chart-card chart-card--full">
+
+    <div class="section-header">
+      <div class="section-title-group" style="border-left-color: #10b981;">
+        <h3>Trend Analysis</h3>
+        <p>แนวโน้มต้นทุนและจำนวนเบิกตามช่วงเวลา</p>
+      </div>
+
+      <div class="filter-pill sort-toggle">
+        <label>View:</label>
+        <div class="btn-group" role="group" aria-label="Trend Toggle">
+          <input type="radio" class="btn-check" name="trendMode" id="trendMonthly" value="monthly"
+            [(ngModel)]="trendViewMode" (change)="renderTrendChart()">
+          <label class="btn btn-outline-secondary btn-sm" for="trendMonthly">Monthly</label>
+
+          <input type="radio" class="btn-check" name="trendMode" id="trendDaily" value="daily"
+            [(ngModel)]="trendViewMode" (change)="renderTrendChart()">
+          <label class="btn btn-outline-secondary btn-sm" for="trendDaily">Daily</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-canvas">
+      <div class="chart-inner">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart Grid -->
+  <div class="card-grid">
+
+    <!-- ═══ Overview (Stacked Bar) ═══ -->
+    <div class="chart-card chart-card--full chart-card--overview">
+
+      <div class="section-header">
+        <div class="section-title-group">
+          <h3>Expense by Part</h3>
+          <p>ค่าใช้จ่ายที่เกิดขึ้นกับ Part</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-panel">
+        <div class="filter-group">
+          <label>Top N</label>
+          <input type="number" min="1" max="20" [(ngModel)]="topN1" (change)="renderStackedBarChart()">
+        </div>
+
+
+        <div class="filter-group">
+          <label>Case</label>
+          <select [(ngModel)]="selectedCaseall" (change)="renderStackedBarChart()">
+            <option value="ALL">ทั้งหมด</option>
+            <option *ngFor="let c of uniqueCases" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Process</label>
+          <select [(ngModel)]="selectedprocess" (change)="renderStackedBarChart()">
+            <option value="ALL">ทั้งหมด</option>
+            <option *ngFor="let p of uniqueprocess" [value]="p">{{ p }}</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button type="button" class="toolbar-btn toolbar-btn--zoom-in" (click)="zoomInStacked()">
+          <i class="bi bi-zoom-in"></i> Zoom In</button>
+        <button type="button" class="toolbar-btn toolbar-btn--zoom-out" (click)="zoomOutStacked()">
+          <i class="bi bi-zoom-out"></i> Zoom Out</button>
+        <button type="button" class="toolbar-btn toolbar-btn--reset" (click)="resetStackedChart()">
+          <i class="bi bi-arrows-fullscreen"></i> Reset</button>
+        <button type="button" class="toolbar-btn toolbar-btn--export" (click)="exportStackedPNG()">
+          <i class="bi bi-filetype-png"></i> Save PNG</button>
+      </div>
+
+      <!-- Canvas -->
+      <div class="chart-canvas">
+        <div #stackedWrapper class="chart-inner">
+          <canvas id="stackedSalesChart" style="width:100%;"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ Most Item Select (Horizontal Bar) ═══ -->
+    <div class="chart-card chart-card--full chart-card--item">
+
+      <div class="section-header">
+        <div class="section-title-group">
+          <h3>Most Item Select</h3>
+          <p>Show Most Item Select.</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-panel">
+        <div class="filter-group">
+          <label>Number of ItemNo</label>
+          <input type="number" [(ngModel)]="topN" min="1" (change)="renderHorizontalBarChart()">
+        </div>
+
+
+        <div class="filter-group">
+          <label>Case</label>
+          <select [(ngModel)]="selectedCase" (change)="renderHorizontalBarChart()">
+            <option value="ALL">Select All</option>
+            <option *ngFor="let c of Cases" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Process</label>
+          <select [(ngModel)]="selectedprocesshoz" (change)="renderHorizontalBarChart()">
+            <option value="ALL">Select All</option>
+            <option *ngFor="let c of uniqueprocess" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>เดือน/ปี</label>
+          <div class="date-range">
+            <input type="month" [(ngModel)]="mostItemMonthYear" (change)="renderHorizontalBarChart()">
+            <button class="btn-clear" (click)="clearMostItemDate()" *ngIf="mostItemMonthYear">
+              <i class="bi bi-x-circle"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Item Name</label>
+          <select [(ngModel)]="selectedItemNameHoz" (change)="renderHorizontalBarChart()">
+            <option value="ALL">Select All</option>
+            <option *ngFor="let n of uniqueItemNames" [value]="n">{{ n }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <button type="button" class="toolbar-btn toolbar-btn--zoom-in" (click)="zoomIn()">
+          <i class="bi bi-zoom-in"></i> Zoom In</button>
+        <button type="button" class="toolbar-btn toolbar-btn--zoom-out" (click)="zoomOut()">
+          <i class="bi bi-zoom-out"></i> Zoom Out</button>
+        <button type="button" class="toolbar-btn toolbar-btn--reset" (click)="resetZoom()">
+          <i class="bi bi-arrows-fullscreen"></i> Reset</button>
+        <button type="button" class="toolbar-btn toolbar-btn--export" (click)="exportHorizontalBarPNG()">
+          <i class="bi bi-filetype-png"></i> Save PNG</button>
+      </div>
+
+      <!-- Canvas -->
+      <div class="chart-canvas">
+        <div #horizontalWrapper class="chart-inner">
+          <canvas id="horizontalBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Cost Analyze (Combo Chart) ═══ -->
+    <div class="chart-card chart-card--full chart-card--cost">
+
+      <div class="section-header">
+        <div class="section-title-group">
+          <h3>Cost Analyze</h3>
+          <p>Compare Tooling Usage (QTY) and Total Price (THB)</p>
+        </div>
+
+        <!-- Inline filter pills (right side of header) -->
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+
+
+          <div class="filter-pill sort-toggle">
+            <label>Sort By</label>
+            <div class="btn-group" role="group" aria-label="Sort Toggle">
+              <input type="radio" class="btn-check" name="comboSort" id="sortQty" value="qty" [(ngModel)]="comboSortBy"
+                (change)="renderComboChart()">
+              <label class="btn btn-outline-primary btn-sm" for="sortQty">Highest QTY</label>
+
+              <input type="radio" class="btn-check" name="comboSort" id="sortPrice" value="price"
+                [(ngModel)]="comboSortBy" (change)="renderComboChart()">
+              <label class="btn btn-outline-danger btn-sm" for="sortPrice">Highest Price</label>
+            </div>
+          </div>
+
+          <div class="filter-pill">
+            <label>Top N:</label>
+            <input type="number" [(ngModel)]="comboTopN" min="1" max="50" (change)="renderComboChart()">
+          </div>
+
+          <div class="filter-pill">
+            <label>Item Name:</label>
+            <select [(ngModel)]="selectedItemNameCombo" (change)="renderComboChart()">
+              <option value="ALL">Select All</option>
+              <option *ngFor="let n of uniqueCostItemNames" [value]="n">{{ n }}</option>
+            </select>
+          </div>
+
+
+        </div>
+      </div>
+
+      <!-- Canvas -->
+      <div class="chart-canvas">
+        <div class="chart-inner">
+          <canvas id="comboChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

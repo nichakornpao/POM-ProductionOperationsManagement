@@ -1,0 +1,160 @@
+<div class="content-area">
+
+  <div class="main-header">
+    <div class="header-left">
+      <h4>Return Tooling</h4>
+      <span class="breadcrumb-label">Product Return</span>
+    </div>
+  </div>
+
+  <div class="header-filters">
+    <div class="form-group">
+      <label>Division <span class="text-danger">*</span></label>
+      <ng-select [items]="divisions" bindLabel="Division_Name" bindValue="Division_Id" placeholder="Select Division
+" [(ngModel)]="selectedDivisionId" (change)="onDivisionChange()">
+      </ng-select>
+    </div>
+
+    <div class="form-group">
+      <label>Facility <span class="text-danger">*</span></label>
+      <ng-select [items]="facilities" bindLabel="label" bindValue="value" placeholder="Select Facility"
+        [(ngModel)]="selectedFacility">
+      </ng-select>
+    </div>
+
+    <div class="form-group">
+      <label>Process <span class="text-danger">*</span></label>
+      <ng-select [items]="processes" bindLabel="Process" bindValue="Process" placeholder="Select Process"
+        [(ngModel)]="selectedProcess">
+      </ng-select>
+    </div>
+
+    <div class="form-group">
+      <label>Phone Number</label>
+      <input type="text" [(ngModel)]="phoneNumber" placeholder="Ex. 1234">
+    </div>
+  </div>
+
+  <!-- Smart Input Row (New Feature) -->
+  <div class="smart-input-container">
+    <div class="input-group center-content">
+      <label class="input-label">
+        Scan Item
+      </label>
+      <div class="smart-input-wrapper">
+        <input type="text" class="smart-input" placeholder="Scan barcode or type Item Number..."
+          [formControl]="smartInputControl" [matAutocomplete]="smartAuto" (keyup.enter)="onSmartInputEnter()">
+        <mat-autocomplete #smartAuto="matAutocomplete" (optionSelected)="onSmartSuggestionSelected($event)">
+          <mat-option *ngFor="let item of smartInputSuggestions" [value]="item">
+            <span class="suggestion-code">{{ item.ItemNo }}</span>
+            <span class="suggestion-name">{{ item.ItemName }}</span>
+          </mat-option>
+        </mat-autocomplete>
+        <button type="button" class="btn-clear-input" *ngIf="smartInputControl.value"
+          (click)="smartInputControl.setValue('')">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="hint-text">
+        <i class="fa fa-info-circle"></i> รองรับการสแกนบาร์โค้ด หรือพิมพ์ค้นหาด้วยตัวเอง แล้วกด <strong>Enter</strong>
+        เพื่อเพิ่มลงตาราง
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="return-table">
+      <thead>
+        <tr>
+          <th class="col-no">
+            <input type="checkbox" [(ngModel)]="isAllSelected" (change)="toggleSelectAll()"
+              style="width: 18px; height: 18px; cursor: pointer; vertical-align: middle;">
+          </th>
+          <th class="col-no">No.</th>
+
+          <th class="col-part">
+            Part No.
+            <div style="font-size: 0.65rem; color: #999; font-weight: 400; line-height: 1;">(Not Recommended)</div>
+          </th>
+
+          <th style="width: 15%;">Item No.</th>
+          <th style="width: 20%;">Item Name</th>
+          <th style="width: 15%;">Spec</th>
+          <th class="col-qty">QTY</th>
+          <th class="col-qty">
+            Used ที่ใช้ไป
+            <div style="font-size: 0.65rem; color: #999; font-weight: 400; line-height: 1;">(Not Recommended)</div>
+          </th>
+
+          <th>Remark
+            <div style="font-size: 0.65rem; color: #999; font-weight: 400; line-height: 1;">(Not Recommended)</div>
+          </th>
+
+          <th style="width: 80px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of returnItems; let i = index" [class.active-row]="i === currentRowIndex">
+          <td class="text-center">
+            <input type="checkbox" [(ngModel)]="item.selected" (change)="checkAllSelected()"
+              style="width: 18px; height: 18px; cursor: pointer; vertical-align: middle;">
+          </td>
+          <td class="text-center" style="font-weight: bold; color: #555;">
+            {{ i + 1 }}
+          </td>
+
+          <!-- PART NO. -->
+          <td style="position: relative;">
+            <div class="part-no-wrapper">
+              <ng-select [items]="searchResults[i] || []" bindLabel="PartNo" bindValue="PartNo" [addTag]="true"
+                [addTagText]="'Use: '" [(ngModel)]="item.partNo" (search)="onPartNoInput(i, $event.term)"
+                (focus)="setCurrentRow(i)" (change)="onPartNoSelect(i, $event)" (open)="onPartNoOpen()"
+                placeholder="Not Recommended" appendTo="body">
+                <ng-template ng-option-tmp let-item="item">
+                  {{ item.PartNo }}
+                </ng-template>
+              </ng-select>
+            </div>
+          </td>
+
+          <!-- ITEM NO. (Readonly / Smart Input Only) -->
+          <td>
+            <input type="text" class="table-input readonly" [value]="item.itemNo" readonly placeholder="Scan above..."
+              tabindex="-1">
+          </td>
+
+          <td><input type="text" class="table-input readonly" [(ngModel)]="item.itemName" readonly tabindex="-1"></td>
+          <td><input type="text" class="table-input readonly" [(ngModel)]="item.spec" readonly tabindex="-1"></td>
+          <td><input type="number" class="table-input input-qty" [(ngModel)]="item.qty" min="0"
+              (focus)="setCurrentRow(i)"></td>
+          <td><input type="number" class="table-input input-qty" [(ngModel)]="item.usedQty" (focus)="setCurrentRow(i)">
+          </td>
+          <td><input type="text" class="table-input input-remark" [(ngModel)]="item.remark" (focus)="setCurrentRow(i)">
+          </td>
+          <td class="text-center">
+            <button class="btn-delete-pill" (click)="removeRow(i)">DELETE</button>
+          </td>
+        </tr>
+        <tr *ngIf="returnItems.length === 0">
+          <td colspan="10" class="text-center" style="padding: 30px; color: #999;">
+            ยังไม่มีรายการสินค้า กรุณาสแกนหรือพิมพ์ค้นหา
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="action-buttons">
+    <!-- "Add" button removed as requested -->
+    <button class="btn-delete-all" *ngIf="hasSelectedItems" (click)="deleteSelected()">
+      DELETE SELECTED <i class="bi bi-trash"></i>
+    </button>
+
+    <div style="flex-grow: 1;"></div> <!-- Spacer -->
+
+    <button class="btn-submit" (click)="onSubmit()">
+      <i class="fa fa-paper-plane"></i> Return
+    </button>
+  </div>
+
+</div>

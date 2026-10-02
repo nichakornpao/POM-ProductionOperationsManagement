@@ -1,0 +1,252 @@
+/* โครง layout หลัก */
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* กัน scroll ทั้งหน้า */
+}
+
+
+
+/* Sidebar ให้อยู่กับที่ */
+.app-sidebar {
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #f0f0f0;
+  z-index: 1000;
+}
+
+/* เนื้อหา main ที่ scroll ได้ */
+.main {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  background-color: rgb(229, 253, 255);
+  box-sizing: border-box;
+}
+
+.objectivebox {
+  background-color: #0066b3; /* ฟ้าเข้มขึ้นอีกนิด */
+  padding: 30px;
+  border-radius: 20px;
+  margin: 30px 20px; /* ขยับเข้าชิด sidebar เหลือ margin นิดเดียว */
+  display: flex;
+  justify-content: center;
+}
+
+.objective-content {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;   /* ข้อความอยู่บน */
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.objective-text {
+  flex: 1;
+  min-width: 280px;
+  align-self: flex-start;
+}
+
+.objective-text h1 {
+  font-size: 36px;
+  font-weight: bold;       /* ตัวหนา */
+  margin-bottom: 15px;
+  color: #ffffff;
+}
+
+.objective-text p {
+  font-size: 22px;
+  line-height: 1.5;
+  color: #ffffff;
+}
+
+.objective-image {
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;       /* ลดขนาดรูป */
+  display: flex;
+  justify-content: flex-end;
+}
+
+.objective-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);  /* แสงเงา */
+}
+
+
+
+
+.team {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* <-- บรรทัดสำคัญ */
+  padding-top: 20px;
+}
+
+
+.team h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+}
+
+.teampic {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: auto;
+  gap: 100px ;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 1000px;
+  row-gap: 20px;
+}
+
+
+.member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  font-size: 16px;
+}
+
+.member p {
+  background-color: white;
+  padding: 5px;
+  border-radius: 1  0px;
+}
+
+.circle {
+  width: 120px;
+  height: 120px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 10px;
+}
+
+.circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin-right: 37px;
+}
+
+
+
+.teampic p {
+  color: black;
+
+}
+
+.objec {
+  display: flex;
+  flex-direction: column; /* เรียงแนวตั้ง */
+  align-items: center;     /* จัดตรงกลางแนวนอน */
+  padding-top: 50px;
+}
+.objec h1{
+  font-size: 32px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.to {
+  text-align: left;
+}
+
+.member {
+      background-color: #ffffff;
+      border: 5px solid #0066B3;
+      border-radius: 16px;
+      padding: 30px;
+      width: 200px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: all 0.3s ease;
+}
+
+
+.con{
+  background-color: #0066B3;
+  margin-top: 50px;
+  margin-bottom: none;
+  color: #ffffff;
+  line-height: 50px;
+}
+
+.con p{
+  font-weight: bold;     /* ทำให้หนา */
+  font-style: italic;    /* ทำให้เอียง */
+  font-size: 30px;
+  margin-left: 40px;
+
+
+}
+img{
+  width: 30px;
+  margin-left: 40px;
+
+}
+
+.left {
+  text-align: left;
+  width: 500;
+}
+
+.left img{
+  margin-left: 0px;
+}
+
+.phone {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.rightphone{
+  margin-right: 460px;
+}
+
+
+.mainphone {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.rightmain{
+  margin-right: 460px;
+}
+
+.address{
+  display: flex;
+  justify-content: space-between;
+  margin-left: 40px;
+
+}
+
+.right{
+  margin-right: 176px;
+  
+}
+
+.info-row ,.left {
+  display: flex;
+  align-items: flex-start; /* ไอคอนและข้อความชิดบน */
+  gap: 12px;
+  
+  max-width: 500px;
+}

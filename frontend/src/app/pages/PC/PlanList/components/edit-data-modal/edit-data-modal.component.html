@@ -1,0 +1,82 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+    (click)="onCancel()">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+        (click)="$event.stopPropagation()" style="font-family: 'Kanit', sans-serif;">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100">
+            <div class="flex flex-col">
+                <h2 class="text-xl font-bold text-gray-900">Edit Plan</h2>
+                <p class="text-sm text-gray-500">Edit details for revision {{ editForm?.revision || 0 }}</p>
+            </div>
+            <button (click)="onCancel()"
+                class="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="px-8 py-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10 pt-4">
+
+                <!-- Field Wrapper Function -->
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'date', label: 'Plan Date', value: editForm.date, type: 'date' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'mcType', label: 'Machine Type', value: editForm.mcType, type: 'text' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'fac', label: 'Facility', value: editForm.fac, type: 'text' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'process', label: 'Process', value: editForm.process, type: 'text' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'partBefore', label: 'Part Before', value: editForm.partBefore, type: 'text' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'mcNo', label: 'Machine No.', value: editForm.mcNo, type: 'text' }"></ng-container>
+
+                <div class="md:col-span-2">
+                    <ng-container
+                        *ngTemplateOutlet="field; context: { id: 'partNo', label: 'Part Number', value: editForm.partNo, type: 'text' }"></ng-container>
+                </div>
+
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'qty', label: 'Quantity', value: editForm.qty, type: 'number' }"></ng-container>
+                <ng-container
+                    *ngTemplateOutlet="field; context: { id: 'time', label: 'Process Time', value: editForm.time, type: 'number' }"></ng-container>
+
+                <div class="md:col-span-2">
+                    <ng-container
+                        *ngTemplateOutlet="field; context: { id: 'comment', label: 'Comments', value: editForm.comment, type: 'text' }"></ng-container>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-8 py-6 flex justify-end items-center gap-4 border-t border-gray-100 bg-gray-50/30">
+            <button (click)="onCancel()"
+                class="px-8 py-2.5 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                Cancel
+            </button>
+            <button (click)="onSave()"
+                class="px-8 py-2.5 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-black transition-all duration-200 shadow-lg shadow-gray-200">
+                Save Changes
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Reusable Field Template -->
+<ng-template #field let-id="id" let-label="label" let-value="value" let-type="type">
+    <div class="relative">
+        <input [type]="type" [id]="id" [(ngModel)]="editForm[id]" required
+            class="peer w-full bg-gray-50 border-none px-4 py-4 rounded-xl text-gray-900 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder-transparent"
+            placeholder="placeholder" />
+        <label [for]="id"
+            class="absolute left-4 top-4 text-sm text-gray-400 pointer-events-none transition-all duration-200
+                      peer-focus:-top-2.5 peer-focus:left-2 peer-focus:text-xs peer-focus:text-blue-600 peer-focus:bg-white peer-focus:px-2
+                      peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-gray-500 peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-2">
+            {{ label }}
+        </label>
+    </div>
+</ng-template>

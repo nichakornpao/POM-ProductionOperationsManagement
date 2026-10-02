@@ -1,0 +1,20 @@
+<div class="app-shell" [ngClass]="{'hide-sidebar': isLoginPage}">
+
+    <!-- Sidebar Container (peer: CSS-only hover source) -->
+    <aside class="sidebar-container" *ngIf="!isLoginPage">
+        <app-sidebar [style.display]="isProductionRoute ? 'block' : 'none'"></app-sidebar>
+        <app-sidebarpurchase [style.display]="isPurchaseRoute ? 'block' : 'none'"></app-sidebarpurchase>
+    </aside>
+
+    <!-- Content Blur Overlay (Activated by CSS sibling hover) -->
+    <div class="glass-overlay"></div>
+
+    <!-- Main View Container -->
+    <main class="main-container">
+        <div class="content-scroll-area">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+
+    <app-notification *ngIf="showNotification"></app-notification>
+</div>

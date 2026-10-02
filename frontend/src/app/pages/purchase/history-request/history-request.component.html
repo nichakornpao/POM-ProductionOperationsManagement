@@ -1,0 +1,393 @@
+<div class="page-layout">
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-content">
+      <div class="boxes">
+        <div class="box">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="box">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="box">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="box">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      <p class="loading-text">กำลังโหลดข้อมูล...</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <h1>ISSUE AS400</h1>
+    <p>The loan withdrawal history is here.</p>
+  </header>
+
+  <!-- Action Bar: Filters & Actions -->
+  <div class="action-bar">
+    <div class="filter-group">
+      <div class="filter-item">
+        <label>Division</label>
+        <ng-select [items]="divisionList" bindLabel="label" bindValue="value" [(ngModel)]="Division_"
+          (change)="onDivisionChange()" placeholder="Select Division" [clearable]="true" style="min-width: 150px;">
+        </ng-select>
+      </div>
+      <button class="btn-clear" (click)="clearFilters()">
+        <i class="bi bi-x-circle-fill"></i> Clear
+      </button>
+
+      <!-- Mock Test Action Buttons -->
+      <button class="btn-test-rq" style="display: none;" [class.active-mock]="showMockOnly" (click)="addTestMockData()">
+        <i class="bi" [ngClass]="showMockOnly ? 'bi-bug-fill' : 'bi-bug'"></i>
+        {{ showMockOnly ? 'Exit TEST' : 'TEST' }}
+      </button>
+    </div>
+
+    <div class="actions">
+      <button class="btn-pending" [class.active]="as400FilterStatus === 'pending'" (click)="filterByAS400('pending')">
+        <i class="bi" [ngClass]="as400FilterStatus === 'pending' ? 'bi-hourglass-split' : 'bi-hourglass'"></i> PENDING
+      </button>
+      <button class="btn-fail" [class.active]="as400FilterStatus === 'fail'" (click)="filterByAS400('fail')">
+        <i class="bi"
+          [ngClass]="as400FilterStatus === 'fail' ? 'bi-exclamation-octagon-fill' : 'bi-exclamation-octagon'"></i> FAIL
+      </button>
+      <button class="btn-complete" [class.active]="as400FilterStatus === 'complete'"
+        (click)="filterByAS400('complete')">
+        <i class="bi" [ngClass]="as400FilterStatus === 'complete' ? 'bi-check-circle-fill' : 'bi-check-circle'"></i>
+        COMPLETE
+      </button>
+      <button class="btn-delete-all" (click)="deleteSelected()" [disabled]="isViewer()">
+        <i class="bi bi-trash-fill"></i> Delete
+      </button>
+
+      <button class="btn-export excel" (click)="exportexcel()">
+        <i class="bi bi-file-earmark-spreadsheet"></i> EXPORT TO EXCEL
+      </button>
+
+      <div *ngIf="isAdmin()" class="d-flex align-items-center gap-2" style="margin: 0 5px;">
+        <label class="auto-api-toggle-switch">
+          <input type="checkbox" [checked]="isAutoFireEnabled" (change)="toggleAutoFire()">
+          <div class="toggle-track">
+            <svg class="icon-unlock" height="100" preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width="100"
+              x="0" xmlns="http://www.w3.org/2000/svg" y="0">
+              <path class="svg-fill-primary"
+                d="M50,18A19.9,19.9,0,0,0,30,38v8a8,8,0,0,0-8,8V74a8,8,0,0,0,8,8H70a8,8,0,0,0,8-8V54a8,8,0,0,0-8-8H38V38a12,12,0,0,1,23.6-3,4,4,0,1,0,7.8-2A20.1,20.1,0,0,0,50,18Z">
+              </path>
+            </svg>
+            <svg class="icon-lock" height="100" preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width="100"
+              x="0" xmlns="http://www.w3.org/2000/svg" y="0">
+              <path
+                d="M30,46V38a20,20,0,0,1,40,0v8a8,8,0,0,1,8,8H30a8,8,0,0,1-8-8V54A8,8,0,0,1,30,46Zm32-8v8H38V38a12,12,0,0,1,24,0Z"
+                fill-rule="evenodd"></path>
+            </svg>
+          </div>
+        </label>
+        <div class="d-flex flex-column" style="line-height: 1.2;">
+          <span class="fw-bold" [style.color]="isAutoFireEnabled ? '#10b981' : '#fb7185'" style="font-size: 14px;">
+            AUTO API: {{ isAutoFireEnabled ? 'ON' : 'OFF' }}
+          </span>
+        </div>
+      </div>
+
+      <button class="btn-export as400" (click)="exportas400()">
+        ISSUE TO AS400
+        <div class="icon">
+          <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z"
+              fill="currentColor"></path>
+          </svg>
+        </div>
+      </button>
+
+    </div>
+  </div>
+
+
+  <!-- Division Selection Message -->
+  <div *ngIf="!Division_" class="alert alert-info text-center mt-3" style="font-weight: 500;">
+    <i class="bi bi-info-circle-fill me-2"></i>
+    กรุณาเลือก Division ก่อนทำรายการ to view data. / กรุณาเลือก Division เพื่อแสดงข้อมูล
+  </div>
+
+  <!-- Table Section -->
+  <div class="loader-container" *ngIf="isLoading">
+    <div class="loader"></div>
+  </div>
+
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="table" id="table-data">
+      <thead>
+        <!-- Filters Row -->
+        <tr class="filter-row">
+          <th class="filter-cell"></th> <!-- Checkbox -->
+          <th class="filter-cell"></th> <!-- No. -->
+          <th class="filter-cell"></th> <!-- Division -->
+          <th class="filter-cell">
+            <ng-select class="filter-select" [items]="ItemNoList" bindLabel="label" bindValue="value"
+              [(ngModel)]="ItemNo_" [multiple]="true" (change)="onFilter(true)" placeholder="Item No."
+              [closeOnSelect]="false" [clearable]="true">
+            </ng-select>
+          </th>
+          <th class="filter-cell"></th> <!-- MFG ORDER NO. -->
+          <th class="filter-cell">
+            <ng-select class="filter-select" [items]="DocumentNoList" bindLabel="label" bindValue="value"
+              [(ngModel)]="DocumentNo_" [multiple]="true" (change)="onFilter(true)" placeholder="Document No."
+              [closeOnSelect]="false" [clearable]="true">
+            </ng-select>
+          </th>
+          <th class="filter-cell">
+            <div class="date-range-container">
+              <input type="date" class="form-control form-control-sm filter-date-input" [(ngModel)]="fromDate"
+                (change)="onFilter(true)" placeholder="From">
+              <span class="range-to-text">to</span>
+              <input type="date" class="form-control form-control-sm filter-date-input" [(ngModel)]="toDate"
+                (change)="onFilter(true)" placeholder="To">
+            </div>
+          </th>
+          <th class="filter-cell">
+            <ng-select class="filter-select" [items]="PartNoList" bindLabel="label" bindValue="value"
+              [(ngModel)]="PartNo_" [multiple]="true" (change)="onFilter(true)" placeholder="Part No."
+              [closeOnSelect]="false" [clearable]="true">
+            </ng-select>
+          </th>
+          <th class="filter-cell"></th> <!-- STK LOC. -->
+          <th class="filter-cell"></th> <!-- MATL LOT -->
+          <th class="filter-cell"></th> <!-- ISSUE QTY -->
+          <th class="filter-cell"></th> <!-- M/C TYPE -->
+          <th class="filter-cell"></th> <!-- M/C NO. -->
+          <th *ngIf="Division_ === '71DZ'" class="filter-cell"></th> <!-- M/C 6 DIGIT -->
+          <th class="filter-cell"></th> <!-- DECLATION NO. -->
+          <th class="filter-cell"></th> <!-- AS400 STATUS -->
+          <th class="filter-cell">
+            <ng-select class="filter-select" [items]="CommentStatusList" bindLabel="label" bindValue="value"
+              [(ngModel)]="CommentStatus_" [multiple]="true" (change)="onFilter(true)" placeholder="Comment Status"
+              [closeOnSelect]="false" [clearable]="true">
+            </ng-select>
+          </th> <!-- COMMENT STATUS -->
+          <th class="filter-cell"></th> <!-- DELETE -->
+          <th class="filter-cell"></th> <!-- REMARK -->
+        </tr>
+        <!-- Headers Row -->
+        <tr class="header-row">
+          <th style="width: 40px;">
+            <label class="uiverse-checkbox">
+              <input type="checkbox" [(ngModel)]="selectAllCheck" (change)="toggleAllCheckboxes()" />
+              <div class="checkmark"></div>
+            </label>
+          </th>
+          <th style="width: 60px;">No.</th>
+          <th style="min-width: 60px;" (click)="onSort('Division')" class="sortable">DIVISION <span
+              *ngIf="sortKey === 'Division'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" (click)="onSort('ItemNo')" class="sortable highlight-yellow">ITEM NO.<span
+              *ngIf="sortKey === 'ItemNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 130px;" (click)="onSort('MFG_Order_No')" class="sortable highlight-yellow">MFG ORDER
+            NO.<span *ngIf="sortKey === 'MFG_Order_No'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" (click)="onSort('DocNo')" class="sortable highlight-yellow">DOCUMENT NO.<span
+              *ngIf="sortKey === 'DocNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 260px;" (click)="onSort('DateComplete')" class="sortable highlight-yellow">
+            TRANSACTION(DMY)<span *ngIf="sortKey === 'DateComplete'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="width: 160px;" (click)="onSort('PartNo')" class="sortable">PART NO.<span
+              *ngIf="sortKey === 'PartNo'">{{ sortAsc ? '↑' : '↓' }}</span></th>
+          <th style="min-width: 120px;" class="highlight-yellow">STK LOC.</th>
+          <th style="min-width: 100px;" class="highlight-yellow">MATL LOT</th>
+          <th style="width: 80px;" class="highlight-yellow">ISSUE QTY</th>
+          <th style="min-width: 100px;">M/C TYPE</th>
+          <th style="min-width: 100px;">M/C NO.</th>
+          <th *ngIf="Division_ === '71DZ'" style="min-width: 120px;" class="highlight-yellow">M/C 6 DIGIT</th>
+          <th style="min-width: 120px;">DECLATION NO.</th>
+          <th style="min-width: 130px;">AS400 STATUS</th>
+          <th style="min-width: 260px;" class="highlight-blue text-center">
+            <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+              <span>COMMENT STATUS</span>
+              <button *ngIf="as400FilterStatus === 'fail'" type="button" class="btn-ready-filter"
+                [class.active]="isReadyOnly" (click)="toggleReadyFilter(); $event.stopPropagation()"
+                [title]="isReadyOnly ? 'คลิกเพื่อแสดงทั้งหมดในหน้า FAIL' : 'คลิกเพื่อกรองเฉพาะรายการที่มีของพร้อมตัด'">
+                <span class="pulse-dot"></span>
+                มีของพร้อมตัด ({{ readyToCutCount }})
+              </button>
+            </div>
+          </th>
+          <th style="width: 80px;">DELETE</th>
+          <th style="min-width: 150px;">REMARK</th>
+        </tr>
+
+      </thead>
+      <tbody>
+        <tr *ngIf="filteredRequests.length === 0">
+          <td [attr.colspan]="Division_ === '71DZ' ? 18 : 17" class="text-center text-muted py-4">
+            <ng-container *ngIf="!Division_">
+              <i class="bi bi-info-circle-fill me-2"></i> Please select Division to view data.
+            </ng-container>
+            <ng-container *ngIf="Division_">
+              <i class="bi bi-exclamation-circle-fill me-2"></i> No data found.
+            </ng-container>
+          </td>
+        </tr>
+        <tr *ngFor="let req of paginatedRequests; let i = index" [attr.data-index]="i" [ngClass]="getRowClass(req)">
+          <td>
+            <label class="uiverse-checkbox">
+              <input type="checkbox" [(ngModel)]="req.Selection" (change)="onCheckboxChange(req, i)">
+              <div class="checkmark"></div>
+            </label>
+          </td>
+          <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td>{{ req.Division }}</td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showItemNo">
+              <input type="text" class="form-control form-control-sm text-center" [(ngModel)]="editItemNo"
+                (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showItemNo>
+              <div style="display: flex; flex-direction: column; align-items: center;">
+                <span style="text-decoration: underline;">{{ req.ItemNo }}</span>
+                <span *ngIf="req.isMockTest"
+                  [style.background-color]="req.MockSource === 'CaseSetup' ? '#0d6efd' : '#dc3545'"
+                  style="color: white; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-top: 3px; font-weight: bold; line-height: 1.2;">
+                  TEST MOCK
+                </span>
+              </div>
+            </ng-template>
+          </td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showMFG">
+              <input type="text" class="form-control form-control-sm text-center" [(ngModel)]="editMFGOrderNo"
+                (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showMFG>
+              <span style="text-decoration: underline;">{{ req.DisplayMFG_Order_No }}</span>
+            </ng-template>
+          </td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showDocNo">
+              <input type="text" class="form-control form-control-sm text-center" [(ngModel)]="editDocNo"
+                (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showDocNo>
+              <span style="text-decoration: underline;">{{ req.DocNo || '-' }}</span>
+            </ng-template>
+          </td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showDate">
+              <input type="date" class="form-control form-control-sm text-center" [(ngModel)]="editDateComplete"
+                (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showDate>
+              <span style="text-decoration: underline;">
+                {{ req.DateComplete ? (req.DateComplete | date: 'ddMMyy') : (req.DateTime_Record | date: 'ddMMyy') }}
+              </span>
+            </ng-template>
+          </td>
+          <td style="white-space: nowrap;">{{ req.DisplayPartNo }}</td>
+          <td [class.invalid-cell]="req.isMissingLocation">
+            <ng-container *ngIf="!req.isMissingLocation">
+              {{ req.Stock_Location }}
+            </ng-container>
+            <input *ngIf="req.isMissingLocation" type="text" [(ngModel)]="req.Stock_Location"
+              class="seamless-input missing-text" title="Cross-division or missing location">
+          </td>
+          <td>{{ req.MatLot }}</td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showQty">
+              <input type="number" class="form-control form-control-sm text-center mx-auto" [(ngModel)]="editQty"
+                style="width: 80px;" min="0" (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showQty>
+              <span style="text-decoration: underline;">{{ req.QTY }}</span>
+            </ng-template>
+          </td>
+          <td>{{ req.MCType }}</td>
+          <td>{{ req.MC_No }}</td>
+          <td *ngIf="Division_ === '71DZ'">{{ req.MCNo6Digit }}</td>
+          <td></td>
+          <td>
+            <span class="badge-status" [ngClass]="{
+              'badge-pending-issue': req.AS400STATUS === 'Wait PH Issue',
+              'badge-pending': req.AS400STATUS === 'Pending',
+              'badge-processing': req.AS400STATUS === 'Processing',
+              'badge-success': req.AS400STATUS === 'Success' || req.AS400STATUS === 'DONE',
+              'badge-fail': req.AS400STATUS === 'FAIL' || req.AS400STATUS === 'Failed' || req.AS400STATUS === 'Error'
+            }">
+              <ng-container *ngIf="req.AS400STATUS === 'Processing'; else regularStatus">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"
+                  style="width: 0.8rem; height: 0.8rem;"></span> กำลังตัด...
+              </ng-container>
+              <ng-template #regularStatus>
+                {{ req.AS400STATUS || 'Pending' }}
+              </ng-template>
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="badge-comment" [ngClass]="{
+              'comment-success': req.AS400STATUS === 'DONE' || req.AS400STATUS === 'Success',
+              'comment-ready': req.Comment_Status && (req.Comment_Status.includes('พร้อมตัด') || req.Comment_Status.includes('มีของ')),
+              'comment-fail': (req.Comment_Status && (req.Comment_Status.includes('ของหมด') || req.Comment_Status.includes('ไม่พอตัด') || req.Comment_Status.includes('Master') || req.Comment_Status.includes('ไม่มีเลขชั้นวาง')) || req.AS400STATUS === 'FAIL' || req.AS400STATUS === 'Failed' || req.AS400STATUS === 'Error') && !(req.Comment_Status && (req.Comment_Status.includes('พร้อมตัด') || req.Comment_Status.includes('มีของ'))),
+              'comment-pending': (req.AS400STATUS === 'Pending' || req.AS400STATUS === 'Wait PH Issue') && !(req.Comment_Status && (req.Comment_Status.includes('พร้อมตัด') || req.Comment_Status.includes('มีของ'))),
+              'comment-processing': req.AS400STATUS === 'Processing'
+            }" [title]="req.Comment_Status || ''">
+              <span class="comment-dot"></span>
+              <span class="comment-text">{{ req.Comment_Status || '-' }}</span>
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-danger btn-sm btn-delete-row" (click)="deleteRow(i)"
+              [disabled]="isViewer()">Delete</button>
+          </td>
+          <td (click)="startEdit(req); $event.stopPropagation()" style="cursor: pointer;">
+            <ng-container *ngIf="editingId === req.Public_Id; else showRemark">
+              <input type="text" class="form-control form-control-sm text-center mx-auto" [(ngModel)]="editRemark"
+                (keydown.enter)="saveEdit(req)" (click)="$event.stopPropagation()">
+            </ng-container>
+            <ng-template #showRemark>
+              <span style="text-decoration: underline;">{{ req.Remark }}</span>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 📄 Pagination Controls -->
+  <div class="pagination-container" *ngIf="filteredRequests.length > 0">
+    <div class="pagination-info">
+      Showing <b>{{ (currentPage - 1) * pageSize + 1 }}</b> to <b>{{ (currentPage * pageSize) >
+        filteredRequests.length ? filteredRequests.length : (currentPage * pageSize) }}</b> of <b>{{
+        filteredRequests.length
+        }}</b> entries
+    </div>
+    <nav aria-label="Page navigation" class="mt-3">
+      <ul class="pagination justify-content-end mb-0">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="setPage(currentPage - 1)" aria-label="Previous" style="cursor: pointer;">
+            <i class="bi bi-chevron-left"></i>
+          </a>
+        </li>
+
+        <li class="page-item" *ngFor="let page of pages" [class.active]="currentPage === page">
+          <a class="page-link" (click)="setPage(page)" style="cursor: pointer;">{{ page }}</a>
+        </li>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="setPage(currentPage + 1)" aria-label="Next" style="cursor: pointer;">
+            <i class="bi bi-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

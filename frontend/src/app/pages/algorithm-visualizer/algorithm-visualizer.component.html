@@ -1,0 +1,121 @@
+<div class="container-fluid py-4" style="font-family: 'Kanit', sans-serif;">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="mb-1 fw-bold text-primary">
+        <i class="fa fa-chart-scatter me-2"></i>Algorithm Visualizer
+      </h3>
+      <p class="text-muted mb-0">แสดงผลกราฟจำลองการทำงานของ AI (IQR & DBSCAN) เทียบกับค่า Master Usage</p>
+    </div>
+  </div>
+
+  <!-- Search Card -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+      <div class="row align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-bold text-secondary">ค้นหารหัส Item No.</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="fa fa-search text-muted"></i></span>
+            <input type="text" class="form-control border-start-0" 
+                   [(ngModel)]="searchItemNo" 
+                   (keyup.enter)="fetchData()"
+                   placeholder="เช่น P111006A">
+          </div>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-primary w-100" (click)="fetchData()" [disabled]="isLoading">
+            <i class="fa fa-sync me-2" [class.fa-spin]="isLoading"></i> โหลดกราฟ
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metrics Cards -->
+  <div class="row mb-4" *ngIf="records.length > 0">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-muted mb-1" style="font-size: 0.9rem;">Master Usage</p>
+              <h3 class="fw-bold text-dark">{{ (summary?.masterUsagePcs || 0).toLocaleString() }}</h3>
+            </div>
+            <div class="bg-light rounded p-2 text-warning"><i class="fa fa-award fs-4"></i></div>
+          </div>
+          <small class="text-muted">เกณฑ์มาตรฐาน (Usage_pcs)</small>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 text-white-50" style="font-size: 0.9rem;">Avg Usage (AI)</p>
+              <h3 class="fw-bold text-white">{{ (summary?.finalAvgUsage || 0).toLocaleString() }}</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded p-2 text-white"><i class="fa fa-robot fs-4"></i></div>
+          </div>
+          <small class="text-white-50">หลังตัด Outlier (Broken/IQR/DBSCAN)</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-muted mb-1" style="font-size: 0.9rem;">Ratio ประสิทธิภาพ</p>
+              <h3 class="fw-bold" [ngClass]="{'text-success': summary?.ratio >= 1, 'text-danger': summary?.ratio < 1}">
+                {{ summary?.ratio }}x
+              </h3>
+            </div>
+            <div class="bg-light rounded p-2 text-primary"><i class="fa fa-chart-line fs-4"></i></div>
+          </div>
+          <small class="text-muted">(Avg Usage / Master)</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="text-muted mb-1" style="font-size: 0.9rem;">Variance %</p>
+              <h3 class="fw-bold" [ngClass]="{'text-success': summary?.variancePercent >= 0, 'text-danger': summary?.variancePercent < 0}">
+                {{ summary?.variancePercent > 0 ? '+' : '' }}{{ summary?.variancePercent }}%
+              </h3>
+            </div>
+            <div class="bg-light rounded p-2 text-secondary"><i class="fa fa-percent fs-4"></i></div>
+          </div>
+          <small class="text-muted">ความแตกต่างจากมาตรฐาน</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Graph Card -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4" *ngIf="records.length > 0">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark"><i class="fa fa-chart-area me-2"></i>Executive Scatter Plot</h5>
+        <div class="d-flex gap-3">
+          <span class="badge bg-light text-dark border"><i class="fa fa-circle text-success me-1"></i> กลุ่มปกติ ({{ summary?.includedCount }})</span>
+          <span class="badge bg-light text-dark border"><i class="fa fa-times text-danger me-1"></i> โดนตัดทิ้ง ({{ summary?.excludedCount }})</span>
+        </div>
+      </div>
+      
+      <!-- Chart Canvas -->
+      <div style="height: 500px; width: 100%; position: relative;">
+        <canvas #chartCanvas></canvas>
+      </div>
+      
+    </div>
+  </div>
+
+</div>

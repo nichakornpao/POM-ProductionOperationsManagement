@@ -1,0 +1,64 @@
+<div class="content-area">
+  <div class="main-header">
+    <div class="header-left">
+      <h4>History Print</h4>
+      <span class="breadcrumb-label">Print Log</span>
+    </div>
+  </div>
+
+  <div class="box-input">
+    <div class="form-input">
+      <div class="group-select">
+        <label>Division</label>
+        <ng-select id="div-select" [items]="divisions" [(ngModel)]="selectedDivision" (change)="onFilter()"
+          placeholder="Select a Division">
+        </ng-select>
+      </div>
+
+      <div class="button-group ms-auto">
+        <button class="btn btn-primary" type="button" (click)="onFilter()">
+          <i class="bi bi-funnel"></i> FILTER
+        </button>
+        <button class="btn btn-outline-secondary ms-2" type="button" (click)="onSort()">
+          <i class="bi bi-sort-down"></i> SORT
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ตารางที่รับค่ามาจากการกด send request -->
+  <div class="table-responsive">
+    <table class="table table-hover align-middle text-center" id="table-data">
+      <thead>
+        <tr>
+          <th style="width: 50px;">NO.</th>
+          <th>EMPLOYEE ID</th>
+          <th>DIVISION</th>
+          <th>DOC NO.</th>
+          <th>PART NO.</th>
+          <th>DUE DATE</th>
+          <th>TYPE PRINT</th>
+          <th>DATE PRINT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!isLoading && filteredRequests.length === 0">
+          <td colspan="8" class="text-center text-muted py-5">
+            <i class="bi bi-printer d-block mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+            <h5 class="fw-light">No Print History Found</h5>
+          </td>
+        </tr>
+        <tr *ngFor="let item of filteredRequests; let i = index">
+          <td class="text-center">{{ i + 1 }}</td>
+          <td class="text-center secondary-data">{{ item.EmployeeID }}</td>
+          <td class="text-center fw-medium">{{ item.Division }}</td>
+          <td class="text-center primary-data">{{ item.DocNo }}</td>
+          <td class="text-center secondary-data">{{ item.PratNo }}</td>
+          <td class="text-center secondary-data">{{ item.DueDate | date:'dd/MM/yyyy' }}</td>
+          <td class="text-center secondary-data">{{ item.TypePrint }}</td>
+          <td class="text-center secondary-data">{{ item.Date_Record | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

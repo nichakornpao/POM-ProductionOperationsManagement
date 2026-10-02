@@ -1,0 +1,57 @@
+// ===== Main Header (Standardized) =====
+.main-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 12px;
+    min-height: 48px;
+    animation: slideDown 0.4s ease-out;
+
+    .header-left {
+        flex: 1;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-shrink: 0;
+
+        h4 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+
+        .breadcrumb-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+
+            &::before {
+                content: '|';
+                color: #cbd5e1;
+                font-weight: 300;
+            }
+        }
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
